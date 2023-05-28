@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<head>
+    <title>Image Color Scanner</title>
+</head>
+<html>
+<style>
+.container {
+  display: grid; 
+  grid-template-columns: 0.2fr 0.1fr 0.1fr; 
+  grid-template-rows: 0.1fr 0.1fr 0.1fr; 
+  gap: 0px 0px; 
+  grid-template-areas: 
+    ". files ."
+    ". canvas tools"
+    ". balls ."; 
+}
+.files { grid-area: files; }
+.tools { grid-area: tools; }
+.canvas { grid-area: canvas; }
+.balls { grid-area: balls; }
+/* Styles for buttons */
+button {
+  padding: 10px 20px;
+  font-size: 25px;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-right: 10px;
+}
+
+#red {
+  background-color: red; 
+}
+
+#blue {
+  background-color: blue; 
+}
+
+#green {
+  background-color: green; 
+}
+
+#redpath {
+  background-color: red;
+}
+
+#bluepath {
+  background-color: blue;
+}
+
+#blackpath {
+  background-color: black; 
+}
+
+#clearButton {
+  background-color: darkred; 
+}
+
+#undoButton {
+  background-color: tomato; 
+}
+#Info {
+  background-color: lime; 
+}
+
+/* Hover styles */
+button:hover {
+  opacity: 0.8; /* Reduce opacity on hover */
+}
+.tools > div {
+  margin-bottom: 8px; /* Add space between each element */
+}
+input[type="number"] {
+  padding: 5px 10px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  width: 60px;
+}
+
+input[type="number"]:focus {
+  outline: none;
+  border-color: #888;
+}
+label {
+  font-size: 25px;
+  font-weight: bold;
+}
+.files {
+  display: flex;
+  align-items: center;
+}
+
+.files label,
+.files input[type="file"] {
+  margin-right: 10px;
+}
+ .modal {
+            display: none;
+            position: fixed;
+            z-index: 9999;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-content {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+        }
+
+        .modal-textbox {
+            background-color: white;
+            padding: 20px;
+            border-radius: 4px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+            max-width: 2000px;
+        }
+
+        .close-button {
+            background-color: #ccc;
+            border: none;
+            color: #000;
+            padding: 8px 16px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 14px;
+            margin-top: 16px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+
+</style>
+<body>
+<div class="container">
+  <div class="files">
+	<label for="pngInput">PNG(Optional)</label>
+    <input type="file" id="pngInput" onchange="scanPNGImage(this)" accept="image/png">
+<label for="jpegInput">JPEG</label>
+    <input type="file" id="jpegInput" onchange="handleJPEGImage(this)" accept="image/jpeg">
+  </div>
+  <div class="canvas">
+    <canvas id="canvas" width="500" height="500"></canvas>
+  </div>
+  <div class="balls">
+    <button id="red" onclick="addCircle('red')">Red Ball</button>
+    <button id="blue" onclick="addCircle('blue')">Blue Ball</button>
+    <button id="green" onclick="addCircle('green')">Green Ball</button>
+<label for="radiusInput">Radius</label>
+    <input type="number" min="1" max="999" value="20" id="radiusInput" oninput="updateRadiusValue()">
+<button id="clearButton" onclick="clearCanvas()">Clear All</button>
+      <button id="undoButton" onclick="undo()">Undo</button>
+		<button id="Info" onclick="openModal()">Info</button>
+  </div>
+  <div class="tools"> 
+	<div>
+<input type="radio" id="none" name="radioGroup" value="option1" checked>
+      <label for="drawCheckbox">None</label>
+</div>
+    <div>
+      <input type="radio" id="drawCheckbox" name="radioGroup" value="option2">
+      <label for="drawCheckbox">Draw</label>
+    </div>
+    <div>
+      <input type="radio" id="lineCheckbox" name="radioGroup" value="option3">
+      <label for="lineCheckbox">Line</label>
+    </div>
+    <div>
+      <button id="redpath" onclick="updatePathColor('red')">Red</button>      
+    </div>
+    <div>      
+      <button id="bluepath" onclick="updatePathColor('blue')">Blue</button>     
+    </div>
+    <div>
+      <button id="blackpath" onclick="updatePathColor('black')">Black</button> 
+    </div>
+    <div>          
+<label for="sizeInput">Size</label>
+   <input type="number" min="1" max="999" value="2" id="sizeInput" oninput="updatePathSize()">
+</div>
+  </div>
+</div>
+<div id="myModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-textbox">
+            <h2>Info</h2>
+            <p>Zoom out</p>
+            <p>Right Click to Erase Balls</p>
+				<p>You Can Get The JPEG and PNG From Fortunate Maps</p>
+            <button class="close-button" onclick="closeModal()">Close</button>
+        </div>
+    </div>
+</div>
+</body>
+</html>
+    <script>
+		  var canvas = document.getElementById('canvas');
+        var ctx = canvas.getContext('2d');
+        var mapElements = []; // Global array to store map elements
+        var clickedElements = []; // Global array to store clicked elements
+		  var canvasStates = [];
+        var pathSize = 2; // Default path size
+        var pathColor = "black"; // Default path color
+        var circles = [];
+        var paths = []; // Array to store the paths of freehand drawings
+        var radiusInput = document.getElementById("radiusInput")
+        var isDrawing = false;
+        var selectedCircle = null;
+		 var currentLine = null;
+        function scanPNGImage(input) {
+            var file = input.files[0];
+            if (file.type !== 'image/png') {
+                alert('Please select a PNG image.');
+                return;
+            }
+
+            var invisibleCanvas = document.getElementById('invisibleCanvas');
+            var invisibleContext = invisibleCanvas.getContext('2d');
+            mapElements = []; // Reset mapElements array
+
+            var img = new Image();
+             img.onload = function() {
+                invisibleCanvas.width = img.width;
+                invisibleCanvas.height = img.height;
+                invisibleContext.drawImage(img, 0, 0);
+
+                var imageData = invisibleContext.getImageData(0, 0, invisibleCanvas.width, invisibleCanvas.height);
+                var pixels = imageData.data;
+
+                for (var i = 0; i < pixels.length; i += 4) {
+                    var red = pixels[i];
+                    var green = pixels[i + 1];
+                    var blue = pixels[i + 2];
+
+                    if (red === 255 && green === 0 && blue === 0) {
+                        // Red flag
+                        mapElements.push({ x: i / 4 % invisibleCanvas.width, y: Math.floor(i / 4 / invisibleCanvas.width), color: 'red' });
+                    } else if (red === 255 && green === 115 && blue === 115) {
+                        // Light red boost
+                        mapElements.push({ x: i / 4 % invisibleCanvas.width, y: Math.floor(i / 4 / invisibleCanvas.width), color: 'lightred' });
+                    } else if (red === 0 && green === 0 && blue === 255) {
+                        // Blue flag
+                        mapElements.push({ x: i / 4 % invisibleCanvas.width, y: Math.floor(i / 4 / invisibleCanvas.width), color: 'blue' });
+                    } else if (red === 115 && green === 115 && blue === 255) {
+                        // Light blue boost
+                        mapElements.push({ x: i / 4 % invisibleCanvas.width, y: Math.floor(i / 4 / invisibleCanvas.width), color: 'lightblue' });
+                    } else if (red === 255 && green === 128 && blue === 0) {
+                        // Orange bomb
+                        mapElements.push({ x: i / 4 % invisibleCanvas.width, y: Math.floor(i / 4 / invisibleCanvas.width), color: 'orange' });
+                    } else if (red === 255 && green === 255 && blue === 0) {
+                        // Yellow boost
+                        mapElements.push({ x: i / 4 % invisibleCanvas.width, y: Math.floor(i / 4 / invisibleCanvas.width), color: 'yellow' });
+                    }
+                }
+
+                console.log(mapElements); // Displaying the results in the console
+
+                // You can perform further actions with the mapElements array here
+            };
+
+            img.src = URL.createObjectURL(file);
+        }
+
+        function handleJPEGImage(input) {
+            var file = input.files[0];
+            if (file.type !== 'image/jpeg') {
+                alert('Please select a JPEG image.');
+                return;
+            }
+
+            var img = new Image();
+            img.onload = function() {
+                canvas.width = img.width;
+                canvas.height = img.height;
+                ctx.drawImage(img, 0, 0,);
+                canvas.style.backgroundImage = "url('" + img.src + "')";
+
+
+                // Split canvas into 40x40 pixel grid squares
+                var gridSize = 40;
+                var rows = Math.ceil(canvas.height / gridSize);
+                var columns = Math.ceil(canvas.width / gridSize);
+
+               canvas.addEventListener('click', function(event) {
+                    var rect = canvas.getBoundingClientRect();
+                    var x = event.clientX - rect.left;
+                    var y = event.clientY - rect.top;
+
+                    var gridX = Math.floor(x / gridSize);
+                    var gridY = Math.floor(y / gridSize);
+
+                    // Check if clicked grid matches any map element coordinates
+                    var clickedElement = mapElements.find(function(element) {
+                        return element.x === gridX && element.y === gridY;
+                    });
+
+                    if (clickedElement) {
+                        if (clickedElements.includes(clickedElement)) {
+                            // Remove from clicked elements and restore original color
+                            clickedElements = clickedElements.filter(function(element) {
+                                return element !== clickedElement;
+                            });
+                            ctx.drawImage(img, gridX * gridSize, gridY * gridSize, gridSize, gridSize, gridX * gridSize, gridY * gridSize, gridSize, gridSize);
+                        } else {
+                            // Add to clicked elements and apply darker shade
+                            clickedElements.push(clickedElement);
+                            var imageData = ctx.getImageData(gridX * gridSize, gridY * gridSize, gridSize, gridSize);
+                            var pixels = imageData.data;
+
+                            for (var i = 0; i < pixels.length; i += 4) {
+                                var grayscale = (pixels[i] + pixels[i + 1] + pixels[i + 2]) / 3;
+                                var darkGrayscale = grayscale * 0.6; // Reduce brightness by 40% for a darker shade
+                                pixels[i] = darkGrayscale;
+                                pixels[i + 1] = darkGrayscale;
+                                pixels[i + 2] = darkGrayscale;
+                            }
+
+                            ctx.putImageData(imageData, gridX * gridSize, gridY * gridSize);
+                        }
+
+                        console.log('Clicked on element:', clickedElement);
+                        // Perform actions for the clicked element
+                    } else {
+                        console.log('No map element found at clicked location.');
+                    }
+                });
+            };
+
+            img.src = URL.createObjectURL(file);
+        }
+function addCircle(color) {
+            var x = Math.floor(Math.random() * canvas.width);
+            var y = Math.floor(Math.random() * canvas.height);
+            var radius = Number(radiusInput.value);
+            var circle = { x: x, y: y,radius: radius, color: color };
+            circles.push(circle);
+            drawCanvas();
+        }
+
+        function drawCircle(circle) {
+            ctx.beginPath();
+            ctx.arc(circle.x, circle.y, circle.radius, 0, Math.PI * 2);
+            ctx.fillStyle = circle.color;
+            ctx.fill();
+            ctx.closePath();
+        }
+
+        function drawCircles() {
+            for (var i = 0; i < circles.length; i++) {
+                drawCircle(circles[i]);
+            }
+        }
+
+        function drawPaths() {
+            for (var i = 0; i < paths.length; i++) {
+                ctx.strokeStyle = paths[i].color; 
+                ctx.lineWidth = paths[i].size; 
+                ctx.stroke(paths[i].path);
+            }
+        }
+
+        function drawCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawCircles();
+            drawPaths();
+        }
+
+        function removeCircle(event) {
+            var rect = canvas.getBoundingClientRect();
+            var mouseX = event.clientX - rect.left;
+            var mouseY = event.clientY - rect.top;
+            for (var i = 0; i < circles.length; i++) {
+                var circle = circles[i];
+                var distance = Math.sqrt(Math.pow(mouseX - circle.x, 2) + Math.pow(mouseY - circle.y, 2));
+                if (distance <= circle.radius) {
+                    circles.splice(i, 1);
+                    drawCanvas();
+                    break;
+                }
+            }
+        }
+
+        canvas.addEventListener("contextmenu", function(event) {
+            event.preventDefault();
+            removeCircle(event);
+        });
+
+        function selectCircle(event) {
+            var rect = canvas.getBoundingClientRect();
+            var mouseX = event.clientX - rect.left;
+            var mouseY = event.clientY - rect.top;
+            for (var i = 0; i < circles.length; i++) {
+                var circle = circles[i];
+                var distance = Math.sqrt(Math.pow(mouseX - circle.x, 2) + Math.pow(mouseY - circle.y, 2));
+                if (distance <= circle.radius) {
+                    selectedCircle = circle;
+                    break;
+                }
+            }
+        }
+
+        function moveCircle(event) {
+            if (selectedCircle) {
+                var rect = canvas.getBoundingClientRect();
+                selectedCircle.x = event.clientX - rect.left;
+                selectedCircle.y = event.clientY - rect.top;
+                drawCanvas(); // redraw the canvas with the updated circle position
+            }
+        }
+
+        function getStart(event) {
+            var path = {
+                path: new Path2D(),
+                color: pathColor,
+                size: pathSize
+            };
+            path.path.moveTo(event.clientX - canvas.offsetLeft, event.clientY - canvas.offsetTop);
+            paths.push(path);
+        }
+
+        function drawLine(event) {
+            var lastPath = paths[paths.length - 1];
+            lastPath.path.lineTo(event.clientX - canvas.offsetLeft, event.clientY - canvas.offsetTop);
+            ctx.strokeStyle = lastPath.color;
+            ctx.lineWidth = lastPath.size;
+            ctx.stroke(lastPath.path);
+        }
+
+        function clearPaths() {
+            paths = []; // Empty the paths array
+            drawCanvas(); // Redraw the canvas without the paths
+        }
+
+        function clearCanvas() {
+            circles = []; // Empty the circles array
+            paths = []; // Empty the paths array
+            ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the entire canvas
+        }
+
+        function updatePathSize() {
+            pathSize = Number(document.getElementById("sizeInput").value);
+        }
+
+        function updatePathColor(color) {
+            if (color) {
+                pathColor = color;
+            } else {
+                pathColor = document.getElementById("colorInput").value;
+            }
+        }
+function undo() {
+            if (paths.length > 0) {
+                paths.pop(); // Remove the last path
+
+                // Clear the canvas
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                // Redraw the balls
+                drawCircles();
+
+                // Redraw the remaining paths
+                drawPaths();
+            }
+        }
+			
+        canvas.addEventListener("mousedown", function(event) {
+            if (event.button === 0) {
+                selectCircle(event);
+                if (document.getElementById("drawCheckbox").checked)
+                    isDrawing = true;
+                getStart(event);
+            }
+        });
+
+        canvas.addEventListener("mousemove", function(event) {
+            moveCircle(event);
+            if (isDrawing)
+                drawLine(event);
+        });
+
+        canvas.addEventListener("mouseup", function(event) {
+            selectedCircle = null;
+            isDrawing = false;
+        });
+
+	 var isDrawingLine = false;
+        var lineStartX = 0;
+        var lineStartY = 0;
+
+        function startDrawingLine(event) {
+            if (event.button === 0 && document.getElementById("lineCheckbox").checked) {
+                isDrawingLine = true;
+                lineStartX = event.clientX - canvas.offsetLeft;
+                lineStartY = event.clientY - canvas.offsetTop;
+            }
+        }
+
+        function drawLinePreview(event) {
+            if (isDrawingLine) {
+                var rect = canvas.getBoundingClientRect();
+                var lineEndX = event.clientX - rect.left;
+                var lineEndY = event.clientY - rect.top;
+
+                // Clear the canvas
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                // Redraw the balls
+                drawCircles();
+
+                // Redraw the existing paths
+                drawPaths();
+
+                // Draw the preview line
+                ctx.beginPath();
+                ctx.moveTo(lineStartX, lineStartY);
+                ctx.lineTo(lineEndX, lineEndY);
+                ctx.strokeStyle = pathColor;
+                ctx.lineWidth = pathSize;
+                ctx.stroke();
+            }
+        }
+
+        function finishDrawingLine(event) {
+            if (isDrawingLine) {
+                isDrawingLine = false;
+                var lineEndX = event.clientX - canvas.offsetLeft;
+                var lineEndY = event.clientY - canvas.offsetTop;
+
+                // Create a new path for the line
+                var path = {
+                    path: new Path2D(),
+                    color: pathColor,
+                    size: pathSize
+                };
+                path.path.moveTo(lineStartX, lineStartY);
+                path.path.lineTo(lineEndX, lineEndY);
+                paths.push(path);
+
+                // Clear the canvas
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                // Redraw the balls
+                drawCircles();
+
+                // Redraw all paths
+                drawPaths();
+            }
+        }
+
+        canvas.addEventListener("mousedown", startDrawingLine);
+        canvas.addEventListener("mousemove", drawLinePreview);
+        canvas.addEventListener("mouseup", finishDrawingLine);
+
+function openModal() {
+  const modal = document.getElementById('myModal');
+  modal.style.display = 'block';
+}
+function closeModal() {
+  const modal = document.getElementById('myModal');
+  modal.style.display = 'none';
+}
+    </script>
+</head>
+</body>
+</html>
