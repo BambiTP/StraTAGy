@@ -452,6 +452,20 @@ function addCircle(color) {
                 }
             }
         }
+function undo() {
+            if (paths.length > 0) {
+                paths.pop(); // Remove the last path
+
+                // Clear the canvas
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                // Redraw the balls
+                drawCircles();
+
+                // Redraw the remaining paths
+                drawPaths();
+            }
+        }
 
         canvas.addEventListener("contextmenu", function(event) {
             event.preventDefault();
