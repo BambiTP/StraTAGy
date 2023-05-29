@@ -650,6 +650,12 @@ function closeModal() {
   const modal = document.getElementById('myModal');
   modal.style.display = 'none';
 }
+	    document.addEventListener('keydown', function(event) {
+      if (event.ctrlKey && event.key === 'z') {
+        // Perform your undo function here
+        undo();
+      }
+    });
     </script>
 </head>
 </body>
