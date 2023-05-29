@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <head>
-    <title>Image Color Scanner</title>
+    <title>StraTAGy</title>
 </head>
 <html>
 <style>
@@ -62,6 +62,9 @@ button {
 }
 #Info {
   background-color: lime; 
+}
+#colorAdd {
+  background-color: turquoise; 
 }
 
 /* Hover styles */
@@ -136,9 +139,56 @@ label {
             cursor: pointer;
             border-radius: 4px;
         }
-
 #invisibleCanvas {
   display: none;
+}
+#colorName {
+  padding: 5px 10px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  margin-right: 10px;
+  width: 200px;
+}
+#colorInput {
+  width: 50px;
+  height: 50px;
+  border: none;
+  margin-right: 10px;
+  padding: 0;
+  background: none;
+  cursor: pointer;
+  appearance: none;
+  outline: none;
+}
+
+#colorInput::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+
+#colorInput::-webkit-color-swatch {
+  border: none;
+  border-radius: 50%;
+}
+
+#colorInput::-moz-color-swatch {
+  border: none;
+  border-radius: 50%;
+}
+
+#colorInput::-moz-focus-inner {
+  border: none;
+}
+#colorDisplay {
+  width: 50px;
+  height: 50px;
+  margin-right: 10px;
+  border-radius: 50%;
+  background-color: var(--path-color);
+  display: inline-block;
+  vertical-align: middle;
+  border: 2px solid #000;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.5);
 }
 </style>
 <body>
@@ -158,6 +208,7 @@ label {
     <button id="green" onclick="addCircle('green')">Green Ball</button>
 <label for="radiusInput">Radius</label>
     <input type="number" min="1" max="999" value="20" id="radiusInput" oninput="updateRadiusValue()">
+<button id="clearButton" onclick="clearPaths()">Clear Lines</button>
 <button id="clearButton" onclick="clearCanvas()">Clear All</button>
       <button id="undoButton" onclick="undo()">Undo</button>
 		<button id="Info" onclick="openModal()">Info</button>
@@ -175,6 +226,13 @@ label {
       <input type="radio" id="lineCheckbox" name="radioGroup" value="option3">
       <label for="lineCheckbox">Line</label>
     </div>
+<div>
+<input type="text" value="Some Color" id="colorName">
+<input type="color" id="colorInput" name="colorInput">
+<button id=colorAdd onclick= "colorAdd('colorInput')">Add Color</button>
+
+</div>
+<div id=colors>
     <div>
       <button id="redpath" onclick="updatePathColor('red')">Red</button>      
     </div>
@@ -184,6 +242,10 @@ label {
     <div>
       <button id="blackpath" onclick="updatePathColor('black')">Black</button> 
     </div>
+</div>
+<div>
+<div id="colorDisplay"></div>
+</div>
     <div>          
 <label for="sizeInput">Size</label>
    <input type="number" min="1" max="999" value="2" id="sizeInput" oninput="updatePathSize()">
@@ -451,29 +513,33 @@ function addCircle(color) {
         function updatePathSize() {
             pathSize = Number(document.getElementById("sizeInput").value);
         }
+ function updatePathColor(color) {
+  pathColor = color;
+  document.documentElement.style.setProperty('--path-color', color);
+}
+function colorAdd(colorInput) {
+  var colorInput = document.getElementById(colorInput);
+  var color = colorInput.value;
+  var colorName = document.getElementById("colorName");
+  var colorsDiv = document.getElementById("colors");
+  var colorButton = document.createElement("button");
+  colorButton.style.padding = "10px 20px";
+  colorButton.style.fontSize = "25px";
+  colorButton.style.color = "white";
+  colorButton.style.border = "none";
+  colorButton.style.borderRadius = "4px";
+  colorButton.style.cursor = "pointer";
+  colorButton.style.marginRight = "10px";
+  colorButton.style.backgroundColor = color;
+  colorButton.onclick = function() {
+    updatePathColor(color);
+  };
 
-        function updatePathColor(color) {
-            if (color) {
-                pathColor = color;
-            } else {
-                pathColor = document.getElementById("colorInput").value;
-            }
-        }
-function undo() {
-            if (paths.length > 0) {
-                paths.pop(); // Remove the last path
+  var buttonText = document.createTextNode(colorName.value);
+  colorButton.appendChild(buttonText);
 
-                // Clear the canvas
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-                // Redraw the balls
-                drawCircles();
-
-                // Redraw the remaining paths
-                drawPaths();
-            }
-        }
-			
+  colorsDiv.appendChild(colorButton);
+}
         canvas.addEventListener("mousedown", function(event) {
             if (event.button === 0) {
                 selectCircle(event);
