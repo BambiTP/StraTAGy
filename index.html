@@ -519,23 +519,23 @@ function undo() {
             }
         }
 
-        function getStart(event) {
-            var path = {
-                path: new Path2D(),
-                color: pathColor,
-                size: pathSize
-            };
-            path.path.moveTo(event.clientX - canvas.offsetLeft, event.clientY - canvas.offsetTop);
-            paths.push(path);
-        }
+      function getStart(event) {
+  var path = {
+    path: new Path2D(),
+    color: pathColor,
+    size: pathSize
+  };
+  path.path.moveTo(event.clientX - canvas.getBoundingClientRect().left, event.clientY - canvas.getBoundingClientRect().top);
+  paths.push(path);
+}
 
-        function drawLine(event) {
-            var lastPath = paths[paths.length - 1];
-            lastPath.path.lineTo(event.clientX - canvas.offsetLeft, event.clientY - canvas.offsetTop);
-            ctx.strokeStyle = lastPath.color;
-            ctx.lineWidth = lastPath.size;
-            ctx.stroke(lastPath.path);
-        }
+function drawLine(event) {
+  var lastPath = paths[paths.length - 1];
+  lastPath.path.lineTo(event.clientX - canvas.getBoundingClientRect().left, event.clientY - canvas.getBoundingClientRect().top);
+  ctx.strokeStyle = lastPath.color;
+  ctx.lineWidth = lastPath.size;
+  ctx.stroke(lastPath.path);
+}
 
         function clearPaths() {
             paths = []; // Empty the paths array
@@ -603,64 +603,64 @@ function colorAdd(colorInput) {
         var lineStartY = 0;
 
         function startDrawingLine(event) {
-            if (event.button === 0 && document.getElementById("lineCheckbox").checked) {
-                isDrawingLine = true;
-                lineStartX = event.clientX - canvas.offsetLeft;
-                lineStartY = event.clientY - canvas.offsetTop;
-            }
-        }
+  if (event.button === 0 && document.getElementById("lineCheckbox").checked) {
+    isDrawingLine = true;
+    lineStartX = event.clientX - canvas.getBoundingClientRect().left;
+    lineStartY = event.clientY - canvas.getBoundingClientRect().top;
+  }
+}
 
-        function drawLinePreview(event) {
-            if (isDrawingLine) {
-                var rect = canvas.getBoundingClientRect();
-                var lineEndX = event.clientX - rect.left;
-                var lineEndY = event.clientY - rect.top;
+function drawLinePreview(event) {
+  if (isDrawingLine) {
+    var rect = canvas.getBoundingClientRect();
+    var lineEndX = event.clientX - rect.left;
+    var lineEndY = event.clientY - rect.top;
 
-                // Clear the canvas
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
+    // Clear the canvas
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-                // Redraw the balls
-                drawCircles();
+    // Redraw the balls
+    drawCircles();
 
-                // Redraw the existing paths
-                drawPaths();
-						
-                // Draw the preview line
-                ctx.beginPath();
-                ctx.moveTo(lineStartX, lineStartY);
-                ctx.lineTo(lineEndX, lineEndY);
-                ctx.strokeStyle = pathColor;
-                ctx.lineWidth = pathSize;
-                ctx.stroke();
-            }
-        }
+    // Redraw the existing paths
+    drawPaths();
 
-        function finishDrawingLine(event) {
-            if (isDrawingLine) {
-                isDrawingLine = false;
-                var lineEndX = event.clientX - canvas.offsetLeft;
-                var lineEndY = event.clientY - canvas.offsetTop;
+    // Draw the preview line
+    ctx.beginPath();
+    ctx.moveTo(lineStartX, lineStartY);
+    ctx.lineTo(lineEndX, lineEndY);
+    ctx.strokeStyle = pathColor;
+    ctx.lineWidth = pathSize;
+    ctx.stroke();
+  }
+}
 
-                // Create a new path for the line
-                var path = {
-                    path: new Path2D(),
-                    color: pathColor,
-                    size: pathSize
-                };
-                path.path.moveTo(lineStartX, lineStartY);
-                path.path.lineTo(lineEndX, lineEndY);
-                paths.push(path);
+function finishDrawingLine(event) {
+  if (isDrawingLine) {
+    isDrawingLine = false;
+    var lineEndX = event.clientX - canvas.getBoundingClientRect().left;
+    var lineEndY = event.clientY - canvas.getBoundingClientRect().top;
 
-                // Clear the canvas
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
+    // Create a new path for the line
+    var path = {
+      path: new Path2D(),
+      color: pathColor,
+      size: pathSize
+    };
+    path.path.moveTo(lineStartX, lineStartY);
+    path.path.lineTo(lineEndX, lineEndY);
+    paths.push(path);
 
-                // Redraw the balls
-                drawCircles();
+    // Clear the canvas
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-                // Redraw all paths
-                drawPaths();
-            }
-        }
+    // Redraw the balls
+    drawCircles();
+
+    // Redraw all paths
+    drawPaths();
+  }
+}
 
         canvas.addEventListener("mousedown", startDrawingLine);
         canvas.addEventListener("mousemove", drawLinePreview);
