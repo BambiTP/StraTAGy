@@ -280,7 +280,8 @@ label {
         var isDrawing = false;
         var selectedCircle = null;
 		 var currentLine = null;
-
+		var gridSize = 40;
+var toggledElements = [];
 canvas.style.backgroundImage = "url('74532.jpeg')";
         function scanPNGImage(input) {
             var file = input.files[0];
@@ -335,74 +336,94 @@ canvas.style.backgroundImage = "url('74532.jpeg')";
 
             img.src = URL.createObjectURL(file);
         }
+function handleJPEGImage(input) {
+  var file = input.files[0];
+  if (file.type !== 'image/jpeg') {
+    alert('Please select a JPEG image.');
+    return;
+  }
 
-        function handleJPEGImage(input) {
-            var file = input.files[0];
-            if (file.type !== 'image/jpeg') {
-                alert('Please select a JPEG image.');
-                return;
-            }
+  var img = new Image();
+  img.onload = function() {
+    canvas.width = img.width;
+    canvas.height = img.height;
+    ctx.drawImage(img, 0, 0);
+    canvas.style.backgroundImage = "url('" + img.src + "')";
+  };
 
-            var img = new Image();
-            img.onload = function() {
-                canvas.width = img.width;
-                canvas.height = img.height;
-                ctx.drawImage(img, 0, 0,);
-                canvas.style.backgroundImage = "url('" + img.src + "')";
+  img.src = URL.createObjectURL(file);
+}
+function getImageUrlByColor(color) {
+  var imageUrls = {
+    red: 'red.png',
+    lightred: 'lightred.png',
+    blue: 'blue.png',
+    lightblue: 'lightblue.png',
+    orange: 'orange.png',
+    yellow: 'yellow.png'
+  };
 
+  return imageUrls[color] || null;
+}
 
-                // Split canvas into 40x40 pixel grid squares
-                var gridSize = 40;
-                var rows = Math.ceil(canvas.height / gridSize);
-                var columns = Math.ceil(canvas.width / gridSize);
+function toggleMapElement(x, y) {
 
-               canvas.addEventListener('click', function(event) {
-                    var rect = canvas.getBoundingClientRect();
-                    var x = event.clientX - rect.left;
-                    var y = event.clientY - rect.top;
+  // Find the clicked map element
+  var clickedElement = mapElements.find(function(element) {
+    return element.x === x && element.y === y;
+  });
 
-                    var gridX = Math.floor(x / gridSize);
-                    var gridY = Math.floor(y / gridSize);
+  if (clickedElement) {
+    var imageUrl = getImageUrlByColor(clickedElement.color);
+    if (imageUrl) {
+      // Check if the map element is already toggled
+      var isToggled = clickedElement.toggled || false;
 
-                    // Check if clicked grid matches any map element coordinates
-                    var clickedElement = mapElements.find(function(element) {
-                        return element.x === gridX && element.y === gridY;
-                    });
+      if (isToggled) {
+        // Clear the grid square to show the background
+        ctx.clearRect(x * 40, y * 40, 40, 40);
+        clickedElement.toggled = false;
 
-                    if (clickedElement) {
-                        if (clickedElements.includes(clickedElement)) {
-                            // Remove from clicked elements and restore original color
-                            clickedElements = clickedElements.filter(function(element) {
-                                return element !== clickedElement;
-                            });
-                            ctx.drawImage(img, gridX * gridSize, gridY * gridSize, gridSize, gridSize, gridX * gridSize, gridY * gridSize, gridSize, gridSize);
-                        } else {
-                            // Add to clicked elements and apply darker shade
-                            clickedElements.push(clickedElement);
-                            var imageData = ctx.getImageData(gridX * gridSize, gridY * gridSize, gridSize, gridSize);
-                            var pixels = imageData.data;
-
-                            for (var i = 0; i < pixels.length; i += 4) {
-                                var grayscale = (pixels[i] + pixels[i + 1] + pixels[i + 2]) / 3;
-                                var darkGrayscale = grayscale * 0.6; // Reduce brightness by 40% for a darker shade
-                                pixels[i] = darkGrayscale;
-                                pixels[i + 1] = darkGrayscale;
-                                pixels[i + 2] = darkGrayscale;
-                            }
-
-                            ctx.putImageData(imageData, gridX * gridSize, gridY * gridSize);
-                        }
-
-                        console.log('Clicked on element:', clickedElement);
-                        // Perform actions for the clicked element
-                    } else {
-                        console.log('No map element found at clicked location.');
-                    }
-                });
-            };
-
-            img.src = URL.createObjectURL(file);
+        // Remove the element from the toggledElements array
+        var index = toggledElements.findIndex(function(element) {
+          return element.x === x && element.y === y;
+        });
+        if (index !== -1) {
+          toggledElements.splice(index, 1);
         }
+      } else {
+        // Toggle the map element with the image
+        var image = new Image();
+        image.onload = function() {
+          // Set the grid square to white
+            ctx.fillStyle = '#d4d4d4';
+          ctx.fillRect(x * 40, y * 40, 40, 40);
+
+          // Draw the image
+          ctx.drawImage(image, x * 40, y * 40, 40, 40);
+          clickedElement.toggled = true;
+
+          // Add the element to the toggledElements array
+          toggledElements.push(clickedElement);
+        };
+        image.src = imageUrl;
+      }
+    }
+  }
+}
+
+function handleCanvasClick(event) {
+  var rect = canvas.getBoundingClientRect();
+  var x = Math.floor((event.clientX - rect.left) / 40);
+  var y = Math.floor((event.clientY - rect.top) / 40);
+
+  toggleMapElement(x, y);
+}
+
+// Add a click event listener to the canvas
+canvas.addEventListener('click', handleCanvasClick);
+
+
 function addCircle(color) {
             var x = Math.floor(Math.random() * canvas.width);
             var y = Math.floor(Math.random() * canvas.height);
@@ -437,7 +458,7 @@ function addCircle(color) {
         function drawCanvas() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             drawCircles();
-            drawPaths();
+            drawPaths();;
         }
 
         function removeCircle(event) {
@@ -466,6 +487,7 @@ function undo() {
 
                 // Redraw the remaining paths
                 drawPaths();
+			
             }
         }
 
@@ -602,7 +624,7 @@ function colorAdd(colorInput) {
 
                 // Redraw the existing paths
                 drawPaths();
-
+						
                 // Draw the preview line
                 ctx.beginPath();
                 ctx.moveTo(lineStartX, lineStartY);
@@ -659,6 +681,5 @@ function closeModal() {
       }
     });
     </script>
-</head>
 </body>
 </html>
