@@ -422,7 +422,22 @@ function handleCanvasClick(event) {
 
 // Add a click event listener to the canvas
 canvas.addEventListener('click', handleCanvasClick);
+function redrawToggledElements() {
+  // Redraw the toggled map elements
+  toggledElements.forEach(function(element) {
+    ctx.fillStyle = '#d4d4d4';
+    ctx.fillRect(element.x * gridSize, element.y * gridSize, gridSize, gridSize);
 
+    var imageUrl = getImageUrlByColor(element.color);
+    if (imageUrl) {
+      var image = new Image();
+      image.onload = function() {
+        ctx.drawImage(image, element.x * gridSize, element.y * gridSize, gridSize, gridSize);
+      };
+      image.src = imageUrl;
+    }
+  });
+}
 
 function addCircle(color) {
             var x = Math.floor(Math.random() * canvas.width);
@@ -457,8 +472,10 @@ function addCircle(color) {
 
         function drawCanvas() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
+redrawToggledElements();
             drawCircles();
-            drawPaths();;
+            drawPaths();
+
         }
 
         function removeCircle(event) {
@@ -481,12 +498,13 @@ function undo() {
 
                 // Clear the canvas
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
-
+				redrawToggledElements();
                 // Redraw the balls
                 drawCircles();
 
                 // Redraw the remaining paths
                 drawPaths();
+
 			
             }
         }
@@ -620,10 +638,12 @@ function drawLinePreview(event) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     // Redraw the balls
+redrawToggledElements();
     drawCircles();
 
     // Redraw the existing paths
     drawPaths();
+
 
     // Draw the preview line
     ctx.beginPath();
@@ -655,10 +675,12 @@ function finishDrawingLine(event) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     // Redraw the balls
+redrawToggledElements();
     drawCircles();
 
     // Redraw all paths
     drawPaths();
+
   }
 }
 
