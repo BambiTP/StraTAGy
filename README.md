@@ -1,10 +1,15 @@
 # StraTAGy
 Version 0.3
 -Fixed Map Elements they look way better now
+
 -Fixed Drawings being in wrong spot when scrolled
+
 TO-DO 
+
 Add custom circle colors
+
 Add shape tools
+
 Fix UI to look better with bigger maps
 
 
