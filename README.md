@@ -6,6 +6,9 @@ TO-DO
 Add custom circle colors
 Add shape tools
 Fix UI to look better with bigger maps
+
+
+
 Version 0.2
 -Added Current Color display
 -Added Adding Colors
