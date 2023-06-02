@@ -8,6 +8,7 @@ Version 0.4
 
 
 TO DO:
+Fix Map Elements Being Erased When a Line or Ball Is Drawn
 
 Add More Drawing Tools
 
