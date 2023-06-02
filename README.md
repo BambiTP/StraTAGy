@@ -5,6 +5,7 @@ Version 0.4
 
 Made A Userscript to Redirect From Fortunate Maps 
 https://greasyfork.org/en/scripts/467747-fortunate-maps-stratagy
+
 -Added Fortunate Map Code Compatibility
 
 TO DO:
