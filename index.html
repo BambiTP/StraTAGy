@@ -1,24 +1,35 @@
 <!DOCTYPE html>
-<head>
-    <title>StraTAGy</title>
-</head>
 <html>
 <style>
-.container {
-  display: grid; 
-  grid-template-columns: 0.2fr 0.1fr 0.1fr; 
-  grid-template-rows: 0.1fr 0.1fr 0.1fr; 
-  gap: 0px 0px; 
-  grid-template-areas: 
-    ". files ."
-    ". canvas tools"
-    ". balls ."; 
+.toolbar-bottom {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background-color: #f2f2f2;
+  padding: 10px;
+  z-index: 9999; /* Adjust the z-index to make sure the toolbar is above other elements */
 }
-.files { grid-area: files; }
-.tools { grid-area: tools; }
-.canvas { grid-area: canvas; }
-.balls { grid-area: balls; }
-/* Styles for buttons */
+
+.toolbar-right {
+  position: fixed;
+  top: 0;
+  right: 0;
+  height: 100%;
+  background-color: #f2f2f2;
+  padding: 10px;
+  z-index: 9999; /* Adjust the z-index to make sure the toolbar is above other elements */
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+}
+#colors {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+}
 button {
   padding: 10px 20px;
   font-size: 25px;
@@ -28,7 +39,6 @@ button {
   cursor: pointer;
   margin-right: 10px;
 }
-
 #red {
   background-color: red; 
 }
@@ -64,41 +74,77 @@ button {
   background-color: lime; 
 }
 #colorAdd {
-  background-color: turquoise; 
+  background-color: gray; 
+}
+   .toggle-btn {
+  display: inline-block;
+  padding: 10px 20px;
+  background-color: #e0e0e0; /* Light gray */
+  border-radius: 5px;
+  cursor: pointer;
 }
 
-/* Hover styles */
-button:hover {
-  opacity: 0.8; /* Reduce opacity on hover */
-}
-.tools > div {
-  margin-bottom: 8px; /* Add space between each element */
-}
-input[type="number"] {
-  padding: 5px 10px;
-  font-size: 16px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  width: 60px;
+.toggle-btn.active {
+  background-color: #a0a0a0; /* Darker gray */
+  opacity: 0.5;
 }
 
-input[type="number"]:focus {
-  outline: none;
-  border-color: #888;
-}
-label {
-  font-size: 25px;
-  font-weight: bold;
-}
-.files {
-  display: flex;
-  align-items: center;
-}
-
-.files label,
-.files input[type="file"] {
+.toggle-btn:not(:last-child) {
   margin-right: 10px;
 }
+
+/* Hide the radio buttons */
+input[type="radio"] {
+  display: none;
+}
+#colorDisplay {
+  width: 50px;
+  height: 50px;
+  margin-right: 10px;
+  border-radius: 50%;
+  background-color: var(--path-color);
+  display: inline-block;
+  vertical-align: middle;
+  border: 2px solid #000;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.5);
+}
+#colorInput {
+  width: 25px;
+  height: 25px;
+  border: none;
+  padding: 0;
+  background: none;
+  cursor: pointer;
+  appearance: none;
+  outline: none;
+}
+#loadMap{
+background-color: gray;
+}
+#mapCode{
+width: 150px;
+height: 25px;
+}
+#colorInput::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+
+#colorInput::-webkit-color-swatch {
+  border: none;
+  border-radius: 50%;
+}
+
+#colorInput::-moz-color-swatch {
+  border: none;
+  border-radius: 50%;
+}
+
+#colorInput::-moz-focus-inner {
+  border: none;
+}
+#colorName{
+width: 100px;
+height: 25px;}
  .modal {
   display: none;
   position: fixed;
@@ -140,126 +186,60 @@ label {
   cursor: pointer;
   border-radius: 4px;
 }
-#invisibleCanvas {
-  display: none;
-}
-#colorName {
-  padding: 5px 10px;
-  font-size: 16px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  margin-right: 10px;
-  width: 200px;
-}
-#colorInput {
-  width: 50px;
-  height: 50px;
-  border: none;
-  margin-right: 10px;
-  padding: 0;
-  background: none;
-  cursor: pointer;
-  appearance: none;
-  outline: none;
-}
-
-#colorInput::-webkit-color-swatch-wrapper {
-  padding: 0;
-}
-
-#colorInput::-webkit-color-swatch {
-  border: none;
-  border-radius: 50%;
-}
-
-#colorInput::-moz-color-swatch {
-  border: none;
-  border-radius: 50%;
-}
-
-#colorInput::-moz-focus-inner {
-  border: none;
-}
-#colorDisplay {
-  width: 50px;
-  height: 50px;
-  margin-right: 10px;
-  border-radius: 50%;
-  background-color: var(--path-color);
-  display: inline-block;
-  vertical-align: middle;
-  border: 2px solid #000;
-  box-shadow: 0 0 4px rgba(0, 0, 0, 0.5);
-}
-#loadMap{
-background-color: gray;
-}
-#mapCode{
-width: 150px;
-height: 25px;
 </style>
 <body>
-<div class="container">
-  <div class="files">
+<div class="files">
 	 <label for="mapCode">Enter Map Code:</label>
     <input type="text" id="mapCode" name="mapCode" required>
     <button id= "loadMap" onclick="loadMap()">Load Map</button> 
-<label for="pngInput">PNG(Optinal):</label>
+<label for="pngInput">PNG(Optional):</label>
 <input id="pngInput" type="file" accept="image/png" onchange="scanPNGImage(this)">
   </div>
-  <div class="canvas">
-    <canvas id="canvas" width="1000" height="760"></canvas>
-  </div>
-  <div class="balls">
-    <button id="red" onclick="addCircle('red')">Red Ball</button>
+<div class="container">
+<canvas id="canvas" width="1000" height="760"></canvas>
+</div>
+<footer class="toolbar-bottom">
+   <button id="red" onclick="addCircle('red')">Red Ball</button>
     <button id="blue" onclick="addCircle('blue')">Blue Ball</button>
     <button id="green" onclick="addCircle('green')">Green Ball</button>
-<label for="radiusInput">Radius</label>
+ <label for="radiusInput">Radius</label>
     <input type="number" min="1" max="999" value="20" id="radiusInput" oninput="updateRadiusValue()">
 <button id="clearButton" onclick="clearPaths()">Clear Lines</button>
 <button id="clearButton" onclick="clearCanvas()">Clear All</button>
       <button id="undoButton" onclick="undo()">Undo</button>
 		<button id="Info" onclick="openModal()">Info</button>
-  </div>
-  <div class="tools"> 
-	<div>
-<input type="radio" id="none" name="radioGroup" value="option1" checked>
-      <label for="drawCheckbox">None</label>
-</div>
-    <div>
-      <input type="radio" id="drawCheckbox" name="radioGroup" value="option2">
-      <label for="drawCheckbox">Draw</label>
-    </div>
-    <div>
-      <input type="radio" id="lineCheckbox" name="radioGroup" value="option3">
-      <label for="lineCheckbox">Line</label>
-    </div>
+<div id=colorDisplay> </div>
+</footer>
+
+<footer class="toolbar-right">
+ <label for="noneCheckbox" class="toggle-btn">
+    <input type="radio" id="noneCheckbox" name="radioGroup" value="option1" checked>
+    None
+  </label>
+  <label for="drawCheckbox" class="toggle-btn">
+    <input type="radio" id="drawCheckbox" name="radioGroup" value="option2">
+    Draw
+  </label>
+  <label for="lineCheckbox" class="toggle-btn">
+    <input type="radio" id="lineCheckbox" name="radioGroup" value="option3">
+    Line
+  </label>
+<label for="sizeInput">Size</label>
+<input type="number" min="1" max="999" value="5" id="sizeInput" oninput="updatePathSize()">
 <div>
 <input type="text" value="Some Color" id="colorName">
 <input type="color" id="colorInput" name="colorInput">
+<div>
 <button id=colorAdd onclick= "colorAdd('colorInput')">Add Color</button>
 
 </div>
+</div>
 <div id=colors>
-    <div>
-      <button id="redpath" onclick="updatePathColor('red')">Red</button>      
-    </div>
-    <div>      
-      <button id="bluepath" onclick="updatePathColor('blue')">Blue</button>     
-    </div>
-    <div>
-      <button id="blackpath" onclick="updatePathColor('black')">Black</button> 
-    </div>
+ <button id="redpath" onclick="updatePathColor('red')">Red</button> 
+<button id="bluepath" onclick="updatePathColor('blue')">Blue</button>
+<button id="blackpath" onclick="updatePathColor('black')">Black</button>
 </div>
-<div>
-<div id="colorDisplay"></div>
-</div>
-    <div>          
-<label for="sizeInput">Size</label>
-   <input type="number" min="1" max="999" value="5" id="sizeInput" oninput="updatePathSize()">
-</div>
-  </div>
-</div>
+</footer>
 <div id="myModal" class="modal">
     <div class="modal-content">
         <div class="modal-textbox">
@@ -271,13 +251,10 @@ height: 25px;
 		<p><a href="https://greasyfork.org/en/scripts/467747-fortunate-maps-stratagy">FM Userscript</a></p>
             <button class="close-button" onclick="closeModal()">Close</button>
         </div>
-    </div>
-</div>
-<canvas id="invisibleCanvas" width="1" height="1"></canvas>
 </body>
 </html>
-    <script>
-		  var canvas = document.getElementById('canvas');
+<script>
+ var canvas = document.getElementById('canvas');
         var ctx = canvas.getContext('2d');
         var mapElements = []; // Global array to store map elements
         var clickedElements = []; // Global array to store clicked elements
@@ -715,6 +692,13 @@ function closeModal() {
             var mapCode = mapCodeInput.value;
             handleJPEGImage(mapCode);
         }
+const toggleBtns = document.querySelectorAll('.toggle-btn');
+  toggleBtns.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      toggleBtns.forEach((btn) => btn.classList.remove('active'));
+      btn.classList.add('active');
+    });
+  });
     </script>
 </body>
 </html>
