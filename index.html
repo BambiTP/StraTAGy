@@ -190,14 +190,21 @@ label {
   border: 2px solid #000;
   box-shadow: 0 0 4px rgba(0, 0, 0, 0.5);
 }
+#loadMap{
+background-color: gray;
+}
+#mapCode{
+width: 150px;
+height: 25px;
 </style>
 <body>
 <div class="container">
   <div class="files">
-	<label for="pngInput">PNG(Optional)</label>
-    <input type="file" id="pngInput" onchange="scanPNGImage(this)" accept="image/png">
-<label for="jpegInput">JPEG</label>
-    <input type="file" id="jpegInput" onchange="handleJPEGImage(this)" accept="image/jpeg">
+	 <label for="mapCode">Enter Map Code:</label>
+    <input type="text" id="mapCode" name="mapCode" required>
+    <button id= "loadMap" onclick="loadMap()">Load Map</button> 
+<label for="pngInput">PNG(Optinal):</label>
+<input id="pngInput" type="file" accept="image/png" onchange="scanPNGImage(this)">
   </div>
   <div class="canvas">
     <canvas id="canvas" width="1000" height="760"></canvas>
@@ -282,8 +289,12 @@ label {
 		 var currentLine = null;
 		var gridSize = 40;
 var toggledElements = [];
-canvas.style.backgroundImage = "url('74532.jpeg')";
-        function scanPNGImage(input) {
+const urlParams = new URLSearchParams(window.location.search);
+const mapCode = urlParams.get('mapCode');
+if (mapCode) {
+  handleJPEGImage(mapCode);
+}
+canvas.style.backgroundImage = "url('74532.jpeg')"; function scanPNGImage(input) {
             var file = input.files[0];
             if (file.type !== 'image/png') {
                 alert('Please select a PNG image.');
@@ -336,82 +347,19 @@ canvas.style.backgroundImage = "url('74532.jpeg')";
 
             img.src = URL.createObjectURL(file);
         }
-function handleJPEGImage(input) {
-  var file = input.files[0];
-  if (file.type !== 'image/jpeg') {
-    alert('Please select a JPEG image.');
-    return;
-  }
+function handleJPEGImage(mapCode) {
+            var imageUrl = `https://fortunatemaps.herokuapp.com/preview/${mapCode}.jpeg`;
 
-  var img = new Image();
-  img.onload = function() {
-    canvas.width = img.width;
-    canvas.height = img.height;
-    ctx.drawImage(img, 0, 0);
-    canvas.style.backgroundImage = "url('" + img.src + "')";
-  };
+            var img = new Image();
+            img.onload = function() {
+                canvas.width = img.width;
+                canvas.height = img.height;
+                ctx.drawImage(img, 0, 0);
+                canvas.style.backgroundImage = "url('" + img.src + "')";
+            };
 
-  img.src = URL.createObjectURL(file);
-}
-function getImageUrlByColor(color) {
-  var imageUrls = {
-    red: 'red.png',
-    lightred: 'lightred.png',
-    blue: 'blue.png',
-    lightblue: 'lightblue.png',
-    orange: 'orange.png',
-    yellow: 'yellow.png'
-  };
-
-  return imageUrls[color] || null;
-}
-
-function toggleMapElement(x, y) {
-
-  // Find the clicked map element
-  var clickedElement = mapElements.find(function(element) {
-    return element.x === x && element.y === y;
-  });
-
-  if (clickedElement) {
-    var imageUrl = getImageUrlByColor(clickedElement.color);
-    if (imageUrl) {
-      // Check if the map element is already toggled
-      var isToggled = clickedElement.toggled || false;
-
-      if (isToggled) {
-        // Clear the grid square to show the background
-        ctx.clearRect(x * 40, y * 40, 40, 40);
-        clickedElement.toggled = false;
-
-        // Remove the element from the toggledElements array
-        var index = toggledElements.findIndex(function(element) {
-          return element.x === x && element.y === y;
-        });
-        if (index !== -1) {
-          toggledElements.splice(index, 1);
+            img.src = imageUrl;
         }
-      } else {
-        // Toggle the map element with the image
-        var image = new Image();
-        image.onload = function() {
-          // Set the grid square to white
-            ctx.fillStyle = '#d4d4d4';
-          ctx.fillRect(x * 40, y * 40, 40, 40);
-
-          // Draw the image
-          ctx.drawImage(image, x * 40, y * 40, 40, 40);
-          clickedElement.toggled = true;
-
-          // Add the element to the toggledElements array
-          toggledElements.push(clickedElement);
-        };
-        image.src = imageUrl;
-      }
-    }
-  }
-}
-
 function handleCanvasClick(event) {
   var rect = canvas.getBoundingClientRect();
   var x = Math.floor((event.clientX - rect.left) / 40);
@@ -419,7 +367,63 @@ function handleCanvasClick(event) {
 
   toggleMapElement(x, y);
 }
+function toggleMapElement(x, y) {
+            // Find the clicked map element
+            var clickedElement = mapElements.find(function(element) {
+                return element.x === x && element.y === y;
+            });
 
+            if (clickedElement) {
+                var imageUrl = getImageUrlByColor(clickedElement.color);
+                if (imageUrl) {
+                    // Check if the map element is already toggled
+                    var isToggled = clickedElement.toggled || false;
+
+                    if (isToggled) {
+                        // Clear the grid square to show the background
+                        ctx.clearRect(x * 40, y * 40, 40, 40);
+                        clickedElement.toggled = false;
+
+                        // Remove the element from the toggledElements array
+                        var index = toggledElements.findIndex(function(element) {
+                            return element.x === x && element.y === y;
+                        });
+                        if (index !== -1) {
+                            toggledElements.splice(index, 1);
+                        }
+                    } else {
+                        // Toggle the map element with the image
+                        var image = new Image();
+                        image.onload = function() {
+                            // Set the grid square to white
+                            ctx.fillStyle = '#d4d4d4';
+                            ctx.fillRect(x * 40, y * 40, 40, 40);
+
+                            // Draw the image
+                            ctx.drawImage(image, x * 40, y * 40, 40, 40);
+                            clickedElement.toggled = true;
+
+                            // Add the element to the toggledElements array
+                            toggledElements.push(clickedElement);
+                        };
+                        image.src = imageUrl;
+                    }
+                }
+            }
+        }
+
+ function getImageUrlByColor(color) {
+            var imageUrls = {
+                red: 'red.png',
+                lightred: 'lightred.png',
+                blue: 'blue.png',
+                lightblue: 'lightblue.png',
+                orange: 'orange.png',
+                yellow: 'yellow.png'
+            };
+
+            return imageUrls[color] || null;
+        }
 // Add a click event listener to the canvas
 canvas.addEventListener('click', handleCanvasClick);
 function redrawToggledElements() {
@@ -702,6 +706,12 @@ function closeModal() {
         undo();
       }
     });
+
+	  function loadMap() {
+            var mapCodeInput = document.getElementById('mapCode');
+            var mapCode = mapCodeInput.value;
+            handleJPEGImage(mapCode);
+        }
     </script>
 </body>
 </html>
