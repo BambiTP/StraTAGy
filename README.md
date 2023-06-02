@@ -9,7 +9,9 @@ https://greasyfork.org/en/scripts/467747-fortunate-maps-stratagy
 -Added Fortunate Map Code Compatibility
 
 -Made Layout Much Better
+
 TO DO:
+
 Fix Map Elements Being Erased When a Line or Ball Is Drawn
 
 Fix Buttons getting too small when Zoomed out
