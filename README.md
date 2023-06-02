@@ -1,15 +1,26 @@
 # StraTAGy
+
+
+Version 0.4
+
+
+-Added Fortunate Map Code Compatibility
+
+
+TO DO:
+
+Add More Drawing Tools
+
+Add Yellow Flag and Gates and Portals to the mapElements array.
+
+Add Auto Generated Boost Routes
+
 Version 0.3
 -Fixed Map Elements they look way better now
-
 -Fixed Drawings being in wrong spot when scrolled
-
 TO-DO 
-
 Add custom circle colors
-
 Add shape tools
-
 Fix UI to look better with bigger maps
 
 
