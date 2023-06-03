@@ -183,6 +183,11 @@ height: 25px;}
 #canvas {
 }
 
+.misc {
+  position: absolute;
+  top: 0;
+  right: 0;
+  }
 .sidebar {
   display: flex;
   flex-direction: column;
@@ -195,6 +200,8 @@ height: 25px;}
   margin: 5px 0; /* Add vertical spacing between the elements */
   width: auto; /* Set width to auto for normal sizing */
 }
+#open-form-button{
+background-color: #f9e076;}
 </style>
 <body>
 <div class="files">
@@ -213,8 +220,11 @@ height: 25px;}
 <button id="clearButton" onclick="clearPaths()">Clear Lines</button>
 <button id="clearButton" onclick="clearCanvas()">Clear All</button>
       <button id="undoButton" onclick="undo()">Undo</button>
-		<button id="Info" onclick="openModal()">Info</button>
 <div id=colorDisplay> </div>
+<div class=misc>
+<button id="Info" onclick="openModal()">Info</button>
+	<button id="open-form-button">Open Suggestion Form</button>
+</div>
 </footer>
 <div class="container">
   <canvas id="canvas" width="1000" height="760"></canvas>
@@ -704,6 +714,13 @@ const toggleBtns = document.querySelectorAll('.toggle-btn');
       btn.classList.add('active');
     });
   });
+document.getElementById('open-form-button').addEventListener('click', function() {
+  var formUrl = "https://docs.google.com/forms/d/e/1FAIpQLSdm2Icwdfmm_JpkOpDuu4hxWPyiYnZDoCEZq22FhXl0gKtY4A/viewform?embedded=true"; // Replace with your Google Forms URL
+  var windowFeatures = "width=600,height=400"; // Customize the popup window size as needed
+  
+  // Open a new window or modal dialog with the embedded Google Forms
+  window.open(formUrl, "_blank", windowFeatures);
+});
     </script>
 </body>
 </html>
