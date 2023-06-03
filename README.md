@@ -1,14 +1,12 @@
+https://greasyfork.org/en/scripts/467747-fortunate-maps-stratagy USERSCRIPT FOR FORTUNATE MAPS
 # StraTAGy
+version 0.5
 
+Added Suggestion Form
 
-Version 0.4
+Made Layout Much Better
 
-Made A Userscript to Redirect From Fortunate Maps 
-https://greasyfork.org/en/scripts/467747-fortunate-maps-stratagy
-
--Added Fortunate Map Code Compatibility
-
--Made Layout Much Better
+Added More Colors
 
 TO DO:
 
@@ -22,6 +20,19 @@ Add Yellow Flag and Gates and Portals to the mapElements array.
 
 Add Auto Generated Boost Routes
 
+
+
+Version 0.4
+Made A Userscript to Redirect From Fortunate Maps 
+https://greasyfork.org/en/scripts/467747-fortunate-maps-stratagy
+-Added Fortunate Map Code Compatibility
+-Made Layout Much Better
+TO DO:
+Fix Map Elements Being Erased When a Line or Ball Is Drawn
+Fix Buttons getting too small when Zoomed out 
+Add More Drawing Tools
+Add Yellow Flag and Gates and Portals to the mapElements array.
+Add Auto Generated Boost Routes
 
 Version 0.3
 -Fixed Map Elements they look way better now
