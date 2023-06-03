@@ -12,19 +12,9 @@
 }
 
 .toolbar-right {
-  position: fixed;
   top: 0;
   right: 0;
   height: 100%;
-  background-color: #f2f2f2;
-  padding: 10px;
-  z-index: 9999; /* Adjust the z-index to make sure the toolbar is above other elements */
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  align-items: flex-start;
-}
-#colors {
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
@@ -186,6 +176,25 @@ height: 25px;}
   cursor: pointer;
   border-radius: 4px;
 }
+.container {
+  display: flex;
+}
+
+#canvas {
+}
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start; /* Align sidebar elements to the left */
+}
+
+.sidebar label,
+.sidebar input,
+.sidebar button {
+  margin: 5px 0; /* Add vertical spacing between the elements */
+  width: auto; /* Set width to auto for normal sizing */
+}
 </style>
 <body>
 <div class="files">
@@ -195,9 +204,6 @@ height: 25px;}
 <label for="pngInput">PNG(Optional):</label>
 <input id="pngInput" type="file" accept="image/png" onchange="scanPNGImage(this)">
   </div>
-<div class="container">
-<canvas id="canvas" width="1000" height="760"></canvas>
-</div>
 <footer class="toolbar-bottom">
    <button id="red" onclick="addCircle('red')">Red Ball</button>
     <button id="blue" onclick="addCircle('blue')">Blue Ball</button>
@@ -210,36 +216,35 @@ height: 25px;}
 		<button id="Info" onclick="openModal()">Info</button>
 <div id=colorDisplay> </div>
 </footer>
-
-<footer class="toolbar-right">
- <label for="noneCheckbox" class="toggle-btn">
-    <input type="radio" id="noneCheckbox" name="radioGroup" value="option1" checked>
-    None
-  </label>
-  <label for="drawCheckbox" class="toggle-btn">
-    <input type="radio" id="drawCheckbox" name="radioGroup" value="option2">
-    Draw
-  </label>
-  <label for="lineCheckbox" class="toggle-btn">
-    <input type="radio" id="lineCheckbox" name="radioGroup" value="option3">
-    Line
-  </label>
-<label for="sizeInput">Size</label>
-<input type="number" min="1" max="999" value="5" id="sizeInput" oninput="updatePathSize()">
+<div class="container">
+  <canvas id="canvas" width="1000" height="760"></canvas>
+  <div class="sidebar">
+    <label for="noneCheckbox" class="toggle-btn">
+      <input type="radio" id="noneCheckbox" name="radioGroup" value="option1" checked>
+      None
+    </label>
+    <label for="drawCheckbox" class="toggle-btn">
+      <input type="radio" id="drawCheckbox" name="radioGroup" value="option2">
+      Draw
+    </label>
+    <label for="lineCheckbox" class="toggle-btn">
+      <input type="radio" id="lineCheckbox" name="radioGroup" value="option3">
+      Line
+    </label>
+    <label for="sizeInput">Size</label>
+    <input type="number" min="1" max="999" value="5" id="sizeInput" oninput="updatePathSize()">
 <div>
-<input type="text" value="Some Color" id="colorName">
-<input type="color" id="colorInput" name="colorInput">
-<div>
-<button id=colorAdd onclick= "colorAdd('colorInput')">Add Color</button>
-
+    <input type="text" value="Some Color" id="colorName">
+    <input type="color" id="colorInput" name="colorInput">
+</div>    
+<button id="colorAdd" onclick="colorAdd('colorInput')">Add Color</button>
+    <div id="colors">
+      <button id="redpath" onclick="updatePathColor('red')">Red</button> 
+      <button id="bluepath" onclick="updatePathColor('blue')">Blue</button>
+      <button id="blackpath" onclick="updatePathColor('black')">Black</button>
+    </div>
+  </div>
 </div>
-</div>
-<div id=colors>
- <button id="redpath" onclick="updatePathColor('red')">Red</button> 
-<button id="bluepath" onclick="updatePathColor('blue')">Blue</button>
-<button id="blackpath" onclick="updatePathColor('black')">Black</button>
-</div>
-</footer>
 <div id="myModal" class="modal">
     <div class="modal-content">
         <div class="modal-textbox">
