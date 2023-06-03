@@ -24,8 +24,9 @@ button {
   padding: 10px 20px;
   font-size: 25px;
   color: white;
-  border: none;
-  border-radius: 4px;
+  border: none
+ ;
+  border-radius: 1px;
   cursor: pointer;
   margin-right: 10px;
 }
@@ -202,6 +203,23 @@ height: 25px;}
 }
 #open-form-button{
 background-color: #f9e076;}
+#greenpath{
+background-color: green;}
+#pinkpath{
+background-color: pink;}
+#yellowpath{
+background-color: yellow;}
+#purplepath{
+background-color: purple;}
+#orangepath{
+background-color: orange;}
+#graypath{
+background-color: gray;}
+#whitepath{
+background-color: white;
+color: black;
+  border: ridge;
+}
 </style>
 <body>
 <div class="files">
@@ -242,7 +260,7 @@ background-color: #f9e076;}
       Line
     </label>
     <label for="sizeInput">Size</label>
-    <input type="number" min="1" max="999" value="5" id="sizeInput" oninput="updatePathSize()">
+    <input type="number" min="1" max="999" value="6" id="sizeInput" oninput="updatePathSize()">
 <div>
     <input type="text" value="Some Color" id="colorName">
     <input type="color" id="colorInput" name="colorInput">
@@ -251,7 +269,14 @@ background-color: #f9e076;}
     <div id="colors">
       <button id="redpath" onclick="updatePathColor('red')">Red</button> 
       <button id="bluepath" onclick="updatePathColor('blue')">Blue</button>
-      <button id="blackpath" onclick="updatePathColor('black')">Black</button>
+      <button id="greenpath" onclick="updatePathColor('green')">Green</button>
+      <button id="yellowpath" onclick="updatePathColor('yellow')">Yellow</button>
+      <button id="pinkpath" onclick="updatePathColor('pink')">Pink</button>
+      <button id="orangepath" onclick="updatePathColor('orange')">Orange</button>
+      <button id="purplepath" onclick="updatePathColor('purple')">Purple</button>
+ <button id="graypath" onclick="updatePathColor('gray')">Gray</button>
+ <button id="blackpath" onclick="updatePathColor('black')">Black</button>
+<button id="whitepath" onclick="updatePathColor('white')">White</button>
     </div>
   </div>
 </div>
@@ -274,7 +299,7 @@ background-color: #f9e076;}
         var mapElements = []; // Global array to store map elements
         var clickedElements = []; // Global array to store clicked elements
 		  var canvasStates = [];
-        var pathSize = 2; // Default path size
+        var pathSize = 6; // Default path size
         var pathColor = "black"; // Default path color
         var circles = [];
         var paths = []; // Array to store the paths of freehand drawings
