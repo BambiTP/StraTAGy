@@ -2,6 +2,8 @@ https://greasyfork.org/en/scripts/467747-fortunate-maps-stratagy USERSCRIPT FOR 
 
  https://bambitp.github.io/StraTAGy/  PAGE
 # StraTAGy
+varsion 0.6
+added pallet presets
 version 0.5
 
 Added Suggestion Form
