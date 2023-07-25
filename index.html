@@ -30,43 +30,7 @@ button {
   cursor: pointer;
   margin-right: 10px;
 }
-#red {
-  background-color: red; 
-}
 
-#blue {
-  background-color: blue; 
-}
-
-#green {
-  background-color: green; 
-}
-
-#redpath {
-  background-color: red;
-}
-
-#bluepath {
-  background-color: blue;
-}
-
-#blackpath {
-  background-color: black; 
-}
-
-#clearButton {
-  background-color: darkred; 
-}
-
-#undoButton {
-  background-color: tomato; 
-}
-#Info {
-  background-color: lime; 
-}
-#colorAdd {
-  background-color: gray; 
-}
    .toggle-btn {
   display: inline-block;
   padding: 10px 20px;
@@ -180,7 +144,11 @@ height: 25px;}
 .container {
   display: flex;
 }
-
+#presetEditor {
+  position: fixed;
+  top: 10px; /* Adjust this value to move the div vertically */
+  right: 10px; /* Adjust this value to move the div horizontally */
+}
 #canvas {
 }
 
@@ -203,82 +171,107 @@ height: 25px;}
 }
 #open-form-button{
 background-color: #f9e076;}
-#greenpath{
+#green{
 background-color: green;}
-#pinkpath{
+#pink{
 background-color: pink;}
-#yellowpath{
+#yellow{
 background-color: yellow;}
-#purplepath{
+#purple{
 background-color: purple;}
-#orangepath{
+#orange{
 background-color: orange;}
-#graypath{
+#gray{
 background-color: gray;}
-#whitepath{
+#white{
 background-color: white;
 color: black;
-  border: ridge;
+  border: ridge;}
+#red {
+  background-color: red; 
+}
+
+#blue{
+background-color: blue;}
+#black{
+background-color: black;}
+
+#clearButton{
+background-color: darkred;}
+
+#undoButton {
+background-color: tomato;}
+#Info {
+  background-color: lime; 
+}
+#colorAdd {
+  background-color: gray; 
+}
 }
 </style>
-<body>
 <div class="files">
-	 <label for="mapCode">Enter Map Code:</label>
+    <label for="mapCode">Enter Map Code:</label>
     <input type="text" id="mapCode" name="mapCode" required>
-    <button id= "loadMap" onclick="loadMap()">Load Map</button> 
-<label for="pngInput">PNG(Optional):</label>
-<input id="pngInput" type="file" accept="image/png" onchange="scanPNGImage(this)">
-  </div>
+    <button id="loadMap" onclick="loadMap()">Load Map</button> 
+    <label for="pngInput">PNG(Optional):</label>
+    <input id="pngInput" type="file" accept="image/png" onchange="scanPNGImage(this)">
+</div>
 <footer class="toolbar-bottom">
-   <button id="red" onclick="addCircle('red')">Red Ball</button>
+    <button id="red" onclick="addCircle('red')">Red Ball</button>
     <button id="blue" onclick="addCircle('blue')">Blue Ball</button>
     <button id="green" onclick="addCircle('green')">Green Ball</button>
- <label for="radiusInput">Radius</label>
+    <label for="radiusInput">Radius</label>
     <input type="number" min="1" max="999" value="20" id="radiusInput" oninput="updateRadiusValue()">
-<button id="clearButton" onclick="clearPaths()">Clear Lines</button>
-<button id="clearButton" onclick="clearCanvas()">Clear All</button>
-      <button id="undoButton" onclick="undo()">Undo</button>
-<div id=colorDisplay> </div>
-<div class=misc>
-<button id="Info" onclick="openModal()">Info</button>
-	<button id="open-form-button">Open Suggestion Form</button>
-</div>
+    <button class="clearButton" onclick="clearPaths()">Clear Lines</button>
+    <button class="clearButton" onclick="clearCanvas()">Clear All</button>
+    <button id="undoButton" onclick="undo()">Undo</button>
+    <div id="colorDisplay"></div>
+    <div class="misc">
+        <button id="Info" onclick="openModal()">Info</button>
+        <button id="open-form-button">Open Suggestion Form</button>
+<button id="orange" onclick="togglePresetEditor()">Show/Hide Preset Editor</button>
+    </div> 
+        
 </footer>
+<div id="presetEditor" style="display:none;">
+            <textarea id="presetText" rows="10" cols="50"></textarea>
+            <button id="green" onclick="loadPreset()">Load Preset</button>
+            <button id="orange" onclick="getPreset()">Get Preset</button>
+				<button id="red" onclick=savePreset()>Save</button>
+<label for="presetName">Preset Name:</label>
+<input type="text" id="presetName">
+</div>
 <div class="container">
-  <canvas id="canvas" width="1000" height="760"></canvas>
-  <div class="sidebar">
-    <label for="noneCheckbox" class="toggle-btn">
-      <input type="radio" id="noneCheckbox" name="radioGroup" value="option1" checked>
-      None
-    </label>
-    <label for="drawCheckbox" class="toggle-btn">
-      <input type="radio" id="drawCheckbox" name="radioGroup" value="option2">
-      Draw
-    </label>
-    <label for="lineCheckbox" class="toggle-btn">
-      <input type="radio" id="lineCheckbox" name="radioGroup" value="option3">
-      Line
-    </label>
-    <label for="sizeInput">Size</label>
-    <input type="number" min="1" max="999" value="6" id="sizeInput" oninput="updatePathSize()">
-<div>
-    <input type="text" value="Some Color" id="colorName">
-    <input type="color" id="colorInput" name="colorInput">
-</div>    
-<button id="colorAdd" onclick="colorAdd('colorInput')">Add Color</button>
-    <div id="colors">
-      <button id="redpath" onclick="updatePathColor('red')">Red</button> 
-      <button id="bluepath" onclick="updatePathColor('blue')">Blue</button>
-      <button id="greenpath" onclick="updatePathColor('green')">Green</button>
-      <button id="yellowpath" onclick="updatePathColor('yellow')">Yellow</button>
-      <button id="pinkpath" onclick="updatePathColor('pink')">Pink</button>
-      <button id="orangepath" onclick="updatePathColor('orange')">Orange</button>
-      <button id="purplepath" onclick="updatePathColor('purple')">Purple</button>
- <button id="graypath" onclick="updatePathColor('gray')">Gray</button>
- <button id="blackpath" onclick="updatePathColor('black')">Black</button>
-<button id="whitepath" onclick="updatePathColor('white')">White</button>
+    <canvas id="canvas" width="1000" height="760"></canvas>
+    <div class="sidebar">
+        <label for="noneCheckbox" class="toggle-btn">
+            <input type="radio" id="noneCheckbox" name="radioGroup" value="option1" checked>
+            None
+        </label>
+        <label for="drawCheckbox" class="toggle-btn">
+            <input type="radio" id="drawCheckbox" name="radioGroup" value="option2">
+            Draw
+        </label>
+        <label for="lineCheckbox" class="toggle-btn">
+            <input type="radio" id="lineCheckbox" name="radioGroup" value="option3">
+            Line
+        </label>
+        <label for="sizeInput">Size</label>
+        <input type="number" min="1" max="999" value="6" id="sizeInput" oninput="updatePathSize()">
+        <div>
+            <input type="text" value="Some Color" id="colorName">
+            <input type="color" id="colorInput" name="colorInput">
+        </div>    
+        <button id="colorAdd" onclick="colorAdd(colorInput.value, colorName.value)">Add Color</button>
+        <button id="red" onclick="deleteColorButtons()">Delete All</button>
+
+        <select id="presetDropdown" onchange="switchPreset()">
+            <option value="preset1">Preset 1</option>
+            <option value="preset2">Preset 2</option>
+            <option value="preset3">Preset 3</option>
+        </select>
+        <div id="colors"></div>
     </div>
-  </div>
 </div>
 <div id="myModal" class="modal">
     <div class="modal-content">
@@ -289,10 +282,13 @@ color: black;
 	    <p>You Can Get The Map Code and PNG From Fortunate Maps</p>
  	   <p><a href="https://fortunatemaps.herokuapp.com">Fortunate Maps</a></p>
 		<p><a href="https://greasyfork.org/en/scripts/467747-fortunate-maps-stratagy">FM Userscript</a></p>
+		<p><a href="https://github.com/BambiTP/StraTAGy/tree/main">Github</a></p>
             <button class="close-button" onclick="closeModal()">Close</button>
         </div>
-</body>
-</html>
+       
+        </div>
+    </div>
+</div>
 <script>
  var canvas = document.getElementById('canvas');
         var ctx = canvas.getContext('2d');
@@ -597,10 +593,7 @@ function drawLine(event) {
   pathColor = color;
   document.documentElement.style.setProperty('--path-color', color);
 }
-function colorAdd(colorInput) {
-  var colorInput = document.getElementById(colorInput);
-  var color = colorInput.value;
-  var colorName = document.getElementById("colorName");
+function colorAdd(color, colorName) {
   var colorsDiv = document.getElementById("colors");
   var colorButton = document.createElement("button");
   colorButton.style.padding = "10px 20px";
@@ -611,15 +604,23 @@ function colorAdd(colorInput) {
   colorButton.style.cursor = "pointer";
   colorButton.style.marginRight = "10px";
   colorButton.style.backgroundColor = color;
+  colorButton.innerHTML = colorName; // Set the button text to the value of colorName
+
+  // Check if the color is either "white" or "#FFFFFF"
+  if (color.toLowerCase() === "white" || color === "#FFFFFF") {
+    colorButton.style.border = "1px solid black";
+    colorButton.style.color = "black";
+  }
+
   colorButton.onclick = function() {
     updatePathColor(color);
   };
-
-  var buttonText = document.createTextNode(colorName.value);
-  colorButton.appendChild(buttonText);
-
   colorsDiv.appendChild(colorButton);
 }
+
+
+
+
         canvas.addEventListener("mousedown", function(event) {
             if (event.button === 0) {
                 selectCircle(event);
@@ -746,6 +747,136 @@ document.getElementById('open-form-button').addEventListener('click', function()
   // Open a new window or modal dialog with the embedded Google Forms
   window.open(formUrl, "_blank", windowFeatures);
 });
+
+function deleteColorButtons() {
+  var colorsDiv = document.getElementById("colors");
+  while (colorsDiv.firstChild) {
+    colorsDiv.removeChild(colorsDiv.firstChild);
+  }
+}
+function preset1() { 
+deleteColorButtons();
+colorAdd('#8B0000', 'Dark Red');
+colorAdd('#DC143C', 'Crimson');
+colorAdd('#B22222', 'Fire Brick');
+colorAdd('#CD5C5C', 'Indian Red');
+colorAdd('#FF0000', 'Red');
+colorAdd('#FF6347', 'Tomato');
+colorAdd('#FF7F50', 'Coral');
+colorAdd('#E9967A', 'Dark Salmon');
+colorAdd('#FA8072', 'Salmon');
+colorAdd('#FFA07A', 'Light Salmon');
+colorAdd('#FF4500', 'Orange Red');
+colorAdd('#FF8C00', 'Dark Orange');
+}
+function preset2() {
+deleteColorButtons();
+colorAdd('#FF0000', 'Red');
+colorAdd('#00FF00', 'Green');
+colorAdd('#0000FF', 'Blue');
+colorAdd('#FFFF00', 'Yellow');
+colorAdd('#FF00FF', 'Purple');
+colorAdd('#FFA07A', 'Light Salmon');
+colorAdd('#00FFFF', 'Cyan');
+colorAdd('black', 'Black');
+colorAdd('white', 'White')
+
+}
+function preset3() {
+deleteColorButtons();
+colorAdd('#FF4500', 'Orange');
+colorAdd('#8A2BE2', 'Blue Violet');
+colorAdd('#00CED1', 'Dark Turquoise');
+colorAdd('#FFD700', 'Gold');
+colorAdd('#FF69B4', 'Hot Pink');
+colorAdd('#6B8E23', 'Olive Drab');
+colorAdd('#9400D3', 'Dark Violet');
+colorAdd('black', 'Black');
+colorAdd('white', 'White');
+}
+function switchPreset() {
+  var presetDropdown = document.getElementById("presetDropdown");
+  var selectedPreset = presetDropdown.value;
+if (selectedPreset === "preset1") {
+    preset1();
+  } else if (selectedPreset === "preset2") {
+    preset2();
+  } else if (selectedPreset === "preset3") {
+    preset3();
+  }
+}
+
+function getPresetAsText() {
+  var colorsData = [];
+  var colorButtons = document.querySelectorAll("#colors button");
+
+  colorButtons.forEach(function(button) {
+    var colorData = {
+      color: button.style.backgroundColor,
+      colorName: button.innerHTML
+    };
+    colorsData.push(colorData);
+  });
+
+  var presetText = JSON.stringify(colorsData);
+  return presetText;
+}
+
+function loadPresetFromText(presetText) {
+  try {
+    var colorsData = JSON.parse(presetText);
+
+    var colorsDiv = document.getElementById("colors");
+    colorsDiv.innerHTML = ""; // Clear the colorsDiv before adding colors
+
+    colorsData.forEach(function(colorData) {
+      colorAdd(colorData.color, colorData.colorName);
+    });
+  } catch (error) {
+    console.error("Error loading preset:", error);
+  }
+}
+
+function savePreset() {
+  var presetName = document.getElementById("presetName").value;
+  var presetText = getPresetAsText();
+  
+  var presetDropdown = document.getElementById("presetDropdown");
+  var presetOption = document.createElement("option");
+  presetOption.value = presetText; // Set the value attribute to the JSON string
+  presetOption.text = presetName;
+  presetDropdown.appendChild(presetOption); // Add the new preset option to the dropdown
+}
+
+function loadPreset() {
+  var presetDropdown = document.getElementById("presetDropdown");
+  var selectedPresetIndex = presetDropdown.selectedIndex;
+  if (selectedPresetIndex !== -1) {
+    var selectedPresetText = presetDropdown.options[selectedPresetIndex].value;
+    loadPresetFromText(selectedPresetText);
+  }
+}
+
+function getPreset() {
+  var presetText = getPresetAsText();
+  document.getElementById("presetText").value = presetText;
+}
+function togglePresetEditor() {
+    var presetEditor = document.getElementById("presetEditor");
+    if (presetEditor.style.display === "block") {
+      presetEditor.style.display = "none";
+    } else {
+      presetEditor.style.display = "block";
+    }
+  }
+document.getElementById("presetDropdown").addEventListener("change", function() {
+  var selectedPresetIndex = this.selectedIndex;
+  if (selectedPresetIndex !== -1) {
+    var selectedPresetText = this.options[selectedPresetIndex].value;
+    loadPresetFromText(selectedPresetText);
+  }
+});
+switchPreset();
     </script>
 </body>
 </html>
