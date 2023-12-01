@@ -183,7 +183,12 @@ height: 25px;}
 
 #canvas {
 }
-
+ #invisibleCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+display: none;
+        }
 .misc {
   position: absolute;
   top: 0;
@@ -246,6 +251,7 @@ color: black;
 </footer>
 <div class="container">
   <canvas id="canvas" width="1000" height="760"></canvas>
+  <canvas id="invisibleCanvas"></canvas>
   <div class="sidebar">
     <label for="noneCheckbox" class="toggle-btn">
       <input type="radio" id="noneCheckbox" name="radioGroup" value="option1" checked>
@@ -253,7 +259,7 @@ color: black;
     </label>
     <label for="drawCheckbox" class="toggle-btn">
       <input type="radio" id="drawCheckbox" name="radioGroup" value="option2">
-      Draw
+      Draw 
     </label>
     <label for="lineCheckbox" class="toggle-btn">
       <input type="radio" id="lineCheckbox" name="radioGroup" value="option3">
@@ -291,8 +297,6 @@ color: black;
 		<p><a href="https://greasyfork.org/en/scripts/467747-fortunate-maps-stratagy">FM Userscript</a></p>
             <button class="close-button" onclick="closeModal()">Close</button>
         </div>
-</body>
-</html>
 <script>
  var canvas = document.getElementById('canvas');
         var ctx = canvas.getContext('2d');
@@ -314,7 +318,8 @@ const mapCode = urlParams.get('mapCode');
 if (mapCode) {
   handleJPEGImage(mapCode);
 }
-canvas.style.backgroundImage = "url('74532.jpeg')"; function scanPNGImage(input) {
+canvas.style.backgroundImage = "url('74532.jpeg')"; 
+function scanPNGImage(input) {
             var file = input.files[0];
             if (file.type !== 'image/png') {
                 alert('Please select a PNG image.');
@@ -417,10 +422,10 @@ function toggleMapElement(x, y) {
                         image.onload = function() {
                             // Set the grid square to white
                             ctx.fillStyle = '#d4d4d4';
-                            ctx.fillRect(x * 40, y * 40, 40, 40);
+                            ctx.fillRect(x * 40, y * 40, 39, 39);
 
                             // Draw the image
-                            ctx.drawImage(image, x * 40, y * 40, 40, 40);
+                          ctx.drawImage(image, x * 40, y * 40, 39, 39);
                             clickedElement.toggled = true;
 
                             // Add the element to the toggledElements array
