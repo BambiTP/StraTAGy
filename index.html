@@ -291,8 +291,12 @@ color: black;
         <div class="modal-textbox">
             <h2>Info</h2>
             <p>Zoom out</p>
+			   <p>press N for none</p>
+				<p>Press D to draw</p>
+				<p>press L for line</p>
+
             <p>Right Click to Erase Balls</p>
-	    <p>You Can Get The Map Code and PNG From Fortunate Maps</p>
+	    <p>You Can Get The Map Code and PNG From <a href = "https://fortunatemaps.herokuapp.com/">Fortunate Maps</a></p>
  	   <p><a href="https://github.com/BambiTP/StraTAGy">Github</a></p>
 		<p><a href="https://greasyfork.org/en/scripts/467747-fortunate-maps-stratagy">FM Userscript</a></p>
             <button class="close-button" onclick="closeModal()">Close</button>
@@ -744,6 +748,7 @@ const toggleBtns = document.querySelectorAll('.toggle-btn');
       btn.classList.add('active');
     });
   });
+
 document.getElementById('open-form-button').addEventListener('click', function() {
   var formUrl = "https://docs.google.com/forms/d/e/1FAIpQLSdm2Icwdfmm_JpkOpDuu4hxWPyiYnZDoCEZq22FhXl0gKtY4A/viewform?embedded=true"; // Replace with your Google Forms URL
   var windowFeatures = "width=600,height=400"; // Customize the popup window size as needed
@@ -751,6 +756,29 @@ document.getElementById('open-form-button').addEventListener('click', function()
   // Open a new window or modal dialog with the embedded Google Forms
   window.open(formUrl, "_blank", windowFeatures);
 });
+document.addEventListener('keydown', function(event) {
+    const key = event.key.toLowerCase();
+    if (key === 'n') {
+      document.getElementById('noneCheckbox').checked = true;
+      document.querySelectorAll('.toggle-btn').forEach(function(label) {
+        label.classList.remove('active');
+      });
+      document.querySelector('label[for="noneCheckbox"]').classList.add('active');
+    } else if (key === 'd') {
+      document.getElementById('drawCheckbox').checked = true;
+      document.querySelectorAll('.toggle-btn').forEach(function(label) {
+        label.classList.remove('active');
+      });
+      document.querySelector('label[for="drawCheckbox"]').classList.add('active');
+    } else if (key === 'l') {
+      document.getElementById('lineCheckbox').checked = true;
+      document.querySelectorAll('.toggle-btn').forEach(function(label) {
+        label.classList.remove('active');
+      });
+      document.querySelector('label[for="lineCheckbox"]').classList.add('active');
+    }
+  });
+
     </script>
 </body>
 </html>
