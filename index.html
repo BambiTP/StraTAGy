@@ -377,7 +377,7 @@ function scanPNGImage(input) {
             img.src = URL.createObjectURL(file);
         }
 function handleJPEGImage(mapCode) {
-            var imageUrl = `https://fortunatemaps.herokuapp.com/preview/${mapCode}.jpeg`;
+            var imageUrl = `https://fortunatemaps.herokuapp.com/png/${mapCode}.png`;
 
             var img = new Image();
             img.onload = function() {
