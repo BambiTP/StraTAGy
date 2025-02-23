@@ -489,14 +489,80 @@ function undo() {
       }
     }
     
-  canvas.addEventListener("mousedown", function(event) {
+  var isDrawingLine = false, isFreeDrawing = false;
+var lineStartX = 0, lineStartY = 0;
+
+function startFreeDrawing(event) {
+  if (event.button === 0 && document.getElementById("drawCheckbox").checked) {
+    isFreeDrawing = true;
+    var path = { path: new Path2D(), color: pathColor, size: pathSize };
+    path.path.moveTo(event.clientX - canvas.getBoundingClientRect().left,
+                     event.clientY - canvas.getBoundingClientRect().top);
+    paths.push(path);
+  }
+}
+
+function drawFreehandLine(event) {
+  if (isFreeDrawing) {
+    var lastPath = paths[paths.length - 1];
+    lastPath.path.lineTo(event.clientX - canvas.getBoundingClientRect().left,
+                         event.clientY - canvas.getBoundingClientRect().top);
+    ctx.strokeStyle = lastPath.color;
+    ctx.lineWidth = lastPath.size;
+    ctx.stroke(lastPath.path);
+  }
+}
+
+function finishFreeDrawing(event) {
+  isFreeDrawing = false;
+}
+
+function startDrawingLine(event) {
+  if (event.button === 0 && document.getElementById("lineCheckbox").checked) {
+    isDrawingLine = true;
+    lineStartX = event.clientX - canvas.getBoundingClientRect().left;
+    lineStartY = event.clientY - canvas.getBoundingClientRect().top;
+  }
+}
+
+function drawLinePreview(event) {
+  if (isDrawingLine) {
+    var rect = canvas.getBoundingClientRect();
+    var lineEndX = event.clientX - rect.left;
+    var lineEndY = event.clientY - rect.top;
+    drawCanvas();
+    ctx.beginPath();
+    ctx.moveTo(lineStartX, lineStartY);
+    ctx.lineTo(lineEndX, lineEndY);
+    ctx.strokeStyle = pathColor;
+    ctx.lineWidth = pathSize;
+    ctx.stroke();
+  }
+}
+
+function finishDrawingLine(event) {
+  if (isDrawingLine) {
+    isDrawingLine = false;
+    var lineEndX = event.clientX - canvas.getBoundingClientRect().left;
+    var lineEndY = event.clientY - canvas.getBoundingClientRect().top;
+    var path = { path: new Path2D(), color: pathColor, size: pathSize };
+    path.path.moveTo(lineStartX, lineStartY);
+    path.path.lineTo(lineEndX, lineEndY);
+    paths.push(path);
+    drawCanvas();
+  }
+}
+
+// Modify the event listeners to include freehand drawing
+canvas.addEventListener("mousedown", function(event) {
   if (event.button === 0) {
-    // Try to select a square first.
     selectCircle(event);
-    // Only start line drawing if no square is selected.
+
     if (!selectedCircle) {
       if (document.getElementById("lineCheckbox").checked) {
         startDrawingLine(event);
+      } else if (document.getElementById("drawCheckbox").checked) {
+        startFreeDrawing(event);
       }
     }
   }
@@ -507,17 +573,23 @@ canvas.addEventListener("mousemove", function(event) {
     moveCircle(event);
   } else if (isDrawingLine) {
     drawLinePreview(event);
+  } else if (isFreeDrawing) {
+    drawFreehandLine(event);
   }
 });
 
 canvas.addEventListener("mouseup", function(event) {
   if (isDrawingLine) {
     finishDrawingLine(event);
+  } else if (isFreeDrawing) {
+    finishFreeDrawing(event);
   }
-  // Reset both flags
+
   selectedCircle = null;
   isDrawingLine = false;
+  isFreeDrawing = false;
 });
+
 
     document.addEventListener('keydown', function(event) {
       if (event.ctrlKey && event.key === 'z') { undo(); }
@@ -538,6 +610,13 @@ canvas.addEventListener("mouseup", function(event) {
         document.querySelector('label[for="lineCheckbox"]').classList.add('active');
       }
     });
+    document.querySelectorAll('input[name="radioGroup"]').forEach(radio => {
+    radio.addEventListener('change', function() {
+        document.querySelectorAll('.toggle-btn').forEach(label => label.classList.remove('active'));
+        document.querySelector(`label[for="${this.id}"]`).classList.add('active');
+    });
+});
+
     
     function openModal() { document.getElementById('myModal').style.display = 'block'; }
     function closeModal() { document.getElementById('myModal').style.display = 'none'; }
