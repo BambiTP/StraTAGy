@@ -221,7 +221,6 @@
   <footer class="toolbar-bottom">
     <button id="red" onclick="addCircle('red')">Red Ball</button>
     <button id="blue" onclick="addCircle('blue')">Blue Ball</button>
-    <input type="number" min="1" max="999" value="20" id="radiusInput" oninput="updateRadiusValue()">
     <button id="clearButton" onclick="clearPaths()">Clear Lines</button>
     <button id="clearButton" onclick="clearCanvas()">Clear All</button>
     <button id="undoButton" onclick="undo()">Undo</button>
@@ -617,10 +616,6 @@ canvas.addEventListener("mouseup", function(event) {
     
     function openModal() { document.getElementById('myModal').style.display = 'block'; }
     function closeModal() { document.getElementById('myModal').style.display = 'none'; }
-    document.getElementById('open-form-button').addEventListener('click', function() {
-      var formUrl = "https://docs.google.com/forms/d/e/1FAIpQLSdm2Icwdfmm_JpkOpDuu4hxWPyiYnZDoCEZq22FhXl0gKtY4A/viewform?embedded=true";
-      window.open(formUrl, "_blank", "width=600,height=400");
-    });
     
     // =====================================================
     // MAP PROCESSING & TEXTURE PACK DROPDOWN (new code)
