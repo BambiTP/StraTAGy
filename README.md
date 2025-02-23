@@ -4,11 +4,14 @@ https://greasyfork.org/en/scripts/467747-fortunate-maps-stratagy USERSCRIPT FOR 
 # StraTAGy
 Version 0.5
 
-Reverted back to 0.5
+version 0.6
 
-verrsion 0.6
+Uses png to generate map instead of using fortunate maps.jpeg
 
-added pallet presets
+Added texture packs
+
+Fixed bug that makes it draw when you are moving circle
+
 
 version 0.5
 
