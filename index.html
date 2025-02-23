@@ -1213,6 +1213,15 @@ if (mapJSONData && mapJSONData.fields && mapJSONData.fields[fieldKey]) {
     });
   });
 }
+window.addEventListener("DOMContentLoaded", function() {
+  const params = new URLSearchParams(window.location.search);
+  const mapCode = params.get("mapCode");
+  if (mapCode) {
+    // Optionally, set the mapCode input field's value if you have one.
+    document.getElementById("mapCode").value = mapCode;
+    loadMapForTextures();
+  }
+});
 
 
 document.addEventListener("DOMContentLoaded", function() {
