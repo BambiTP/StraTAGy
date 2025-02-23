@@ -1,784 +1,1239 @@
 <!DOCTYPE html>
 <html>
-<style>
-.toolbar-bottom {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  background-color: #f2f2f2;
-  padding: 10px;
-  z-index: 9999; /* Adjust the z-index to make sure the toolbar is above other elements */
-}
-
-.toolbar-right {
-  top: 0;
-  right: 0;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  align-items: flex-start;
-}
-button {
-  padding: 10px 20px;
-  font-size: 25px;
-  color: white;
-  border: none
- ;
-  border-radius: 1px;
-  cursor: pointer;
-  margin-right: 10px;
-}
-#red {
-  background-color: red; 
-}
-
-#blue {
-  background-color: blue; 
-}
-
-#green {
-  background-color: green; 
-}
-
-#redpath {
-  background-color: red;
-}
-
-#bluepath {
-  background-color: blue;
-}
-
-#blackpath {
-  background-color: black; 
-}
-
-#clearButton {
-  background-color: darkred; 
-}
-
-#undoButton {
-  background-color: tomato; 
-}
-#Info {
-  background-color: lime; 
-}
-#colorAdd {
-  background-color: gray; 
-}
-   .toggle-btn {
-  display: inline-block;
-  padding: 10px 20px;
-  background-color: #e0e0e0; /* Light gray */
-  border-radius: 5px;
-  cursor: pointer;
-}
-
-.toggle-btn.active {
-  background-color: #a0a0a0; /* Darker gray */
-  opacity: 0.5;
-}
-
-.toggle-btn:not(:last-child) {
-  margin-right: 10px;
-}
-
-/* Hide the radio buttons */
-input[type="radio"] {
-  display: none;
-}
-#colorDisplay {
-  width: 50px;
-  height: 50px;
-  margin-right: 10px;
-  border-radius: 50%;
-  background-color: var(--path-color);
-  display: inline-block;
-  vertical-align: middle;
-  border: 2px solid #000;
-  box-shadow: 0 0 4px rgba(0, 0, 0, 0.5);
-}
-#colorInput {
-  width: 25px;
-  height: 25px;
-  border: none;
-  padding: 0;
-  background: none;
-  cursor: pointer;
-  appearance: none;
-  outline: none;
-}
-#loadMap{
-background-color: gray;
-}
-#mapCode{
-width: 150px;
-height: 25px;
-}
-#colorInput::-webkit-color-swatch-wrapper {
-  padding: 0;
-}
-
-#colorInput::-webkit-color-swatch {
-  border: none;
-  border-radius: 50%;
-}
-
-#colorInput::-moz-color-swatch {
-  border: none;
-  border-radius: 50%;
-}
-
-#colorInput::-moz-focus-inner {
-  border: none;
-}
-#colorName{
-width: 100px;
-height: 25px;}
- .modal {
-  display: none;
-  position: fixed;
-  z-index: 9999;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
-}
-
-.modal-content {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 100%;
-  height: 100%;
-}
-
-.modal-textbox {
-  background-color: white;
-  padding: 20px;
-  border-radius: 4px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-  max-width: 400px;
-  font-size: 25px;
-}
-
-.close-button {
-  background-color: #ccc;
-  border: none;
-  color: #000;
-  padding: 8px 16px;
-  text-align: center;
-  text-decoration: none;
-  display: inline-block;
-  font-size: 16px;
-  margin-top: 16px;
-  cursor: pointer;
-  border-radius: 4px;
-}
-.container {
-  display: flex;
-}
-
-#canvas {
-}
- #invisibleCanvas {
-            position: absolute;
-            top: 0;
-            left: 0;
-display: none;
-        }
-.misc {
-  position: absolute;
-  top: 0;
-  right: 0;
-  }
-.sidebar {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start; /* Align sidebar elements to the left */
-}
-
-.sidebar label,
-.sidebar input,
-.sidebar button {
-  margin: 5px 0; /* Add vertical spacing between the elements */
-  width: auto; /* Set width to auto for normal sizing */
-}
-#open-form-button{
-background-color: #f9e076;}
-#greenpath{
-background-color: green;}
-#pinkpath{
-background-color: pink;}
-#yellowpath{
-background-color: yellow;}
-#purplepath{
-background-color: purple;}
-#orangepath{
-background-color: orange;}
-#graypath{
-background-color: gray;}
-#whitepath{
-background-color: white;
-color: black;
-  border: ridge;
-}
-</style>
+<head>
+  <meta charset="UTF-8">
+  <title>Fortunate Maps with Drawing & Texture Packs</title>
+  <style>
+    /* Original CSS for drawing and UI */
+    .toolbar-bottom {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background-color: #f2f2f2;
+      padding: 10px;
+      z-index: 9999; /* Ensure toolbar is above other elements */
+    }
+    .toolbar-right {
+      top: 0;
+      right: 0;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      align-items: flex-start;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 25px;
+      color: white;
+      border: none;
+      border-radius: 1px;
+      cursor: pointer;
+      margin-right: 10px;
+    }
+    #red { background-color: red; }
+    #blue { background-color: blue; }
+    #green { background-color: green; }
+    #redpath { background-color: red; }
+    #bluepath { background-color: blue; }
+    #blackpath { background-color: black; }
+    #clearButton { background-color: darkred; }
+    #undoButton { background-color: tomato; }
+    #Info { background-color: lime; }
+    #colorAdd { background-color: gray; }
+    .toggle-btn {
+      display: inline-block;
+      padding: 10px 20px;
+      background-color: #e0e0e0;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .toggle-btn.active {
+      background-color: #a0a0a0;
+      opacity: 0.5;
+    }
+    .toggle-btn:not(:last-child) { margin-right: 10px; }
+    input[type="radio"] { display: none; }
+    #colorDisplay {
+      width: 50px;
+      height: 50px;
+      margin-right: 10px;
+      border-radius: 50%;
+      background-color: var(--path-color);
+      display: inline-block;
+      vertical-align: middle;
+      border: 2px solid #000;
+      box-shadow: 0 0 4px rgba(0, 0, 0, 0.5);
+    }
+    #colorInput {
+      width: 25px;
+      height: 25px;
+      border: none;
+      padding: 0;
+      background: none;
+      cursor: pointer;
+      appearance: none;
+      outline: none;
+    }
+    #colorInput::-webkit-color-swatch-wrapper { padding: 0; }
+    #colorInput::-webkit-color-swatch { border: none; border-radius: 50%; }
+    #colorInput::-moz-color-swatch { border: none; border-radius: 50%; }
+    #colorInput::-moz-focus-inner { border: none; }
+    #mapCode { width: 150px; height: 25px; }
+    #loadMap { background-color: gray; }
+    #open-form-button { background-color: #f9e076; }
+    .misc { position: absolute; top: 0; right: 0; }
+    .sidebar {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    .sidebar label,
+    .sidebar input,
+    .sidebar button {
+      margin: 5px 0;
+      width: auto;
+    }
+    #greenpath { background-color: green; }
+    #pinkpath { background-color: pink; }
+    #yellowpath { background-color: yellow; }
+    #purplepath { background-color: purple; }
+    #orangepath { background-color: orange; }
+    #graypath { background-color: gray; }
+    #whitepath {
+      background-color: white;
+      color: black;
+      border: ridge;
+    }
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 9999;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+    }
+    .modal-content {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+      height: 100%;
+    }
+    .modal-textbox {
+      background-color: white;
+      padding: 20px;
+      border-radius: 4px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+      max-width: 400px;
+      font-size: 25px;
+    }
+    .close-button {
+      background-color: #ccc;
+      border: none;
+      color: #000;
+      padding: 8px 16px;
+      text-align: center;
+      font-size: 16px;
+      margin-top: 16px;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+    .container { display: flex; }
+    /* Position the texture pack dropdown in the top-right */
+    #textureDropdown {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      z-index: 10000;
+    }
+    /* Dropdown styling (simple Bootstrap-like) */
+    .dropdown-toggle {
+      padding: 8px 12px;
+      font-size: 16px;
+      cursor: pointer;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 4px;
+    }
+    .dropdown-menu {
+      background: white;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      max-height: 200px;
+      overflow-y: auto;
+      padding: 0.5rem;
+    }
+    .dropdown-item {
+      padding: 4px 8px;
+      cursor: pointer;
+    }
+    .dropdown-item:hover { background-color: #eee; }
+    .px-2 { padding-left: 0.5rem; padding-right: 0.5rem; }
+  </style>
+</head>
 <body>
-<div class="files">
-	 <label for="mapCode">Enter Map Code:</label>
+  <div class="files">
+    <label for="mapCode">Enter Map Code:</label>
     <input type="text" id="mapCode" name="mapCode" required>
-    <button id= "loadMap" onclick="loadMap()">Load Map</button> 
-<label for="pngInput">PNG(Optional):</label>
-<input id="pngInput" type="file" accept="image/png" onchange="scanPNGImage(this)">
+    <button id="loadMap" onclick="loadMap()">Load Map</button>
+    <label for="pngInput">PNG(Optional):</label>
+    <input id="pngInput" type="file" accept="image/png" onchange="scanPNGImage(this)">
   </div>
-<footer class="toolbar-bottom">
-   <button id="red" onclick="addCircle('red')">Red Ball</button>
-    <button id="blue" onclick="addCircle('blue')">Blue Ball</button>
-    <button id="green" onclick="addCircle('green')">Green Ball</button>
- <label for="radiusInput">Radius</label>
-    <input type="number" min="1" max="999" value="20" id="radiusInput" oninput="updateRadiusValue()">
-<button id="clearButton" onclick="clearPaths()">Clear Lines</button>
-<button id="clearButton" onclick="clearCanvas()">Clear All</button>
-      <button id="undoButton" onclick="undo()">Undo</button>
-<div id=colorDisplay> </div>
-<div class=misc>
-<button id="Info" onclick="openModal()">Info</button>
-	<button id="open-form-button">Open Suggestion Form</button>
-</div>
-</footer>
-<div class="container">
-  <canvas id="canvas" width="1000" height="760"></canvas>
-  <canvas id="invisibleCanvas"></canvas>
-  <div class="sidebar">
-    <label for="noneCheckbox" class="toggle-btn">
-      <input type="radio" id="noneCheckbox" name="radioGroup" value="option1" checked>
-      None
-    </label>
-    <label for="drawCheckbox" class="toggle-btn">
-      <input type="radio" id="drawCheckbox" name="radioGroup" value="option2">
-      Draw 
-    </label>
-    <label for="lineCheckbox" class="toggle-btn">
-      <input type="radio" id="lineCheckbox" name="radioGroup" value="option3">
-      Line
-    </label>
-    <label for="sizeInput">Size</label>
-    <input type="number" min="1" max="999" value="6" id="sizeInput" oninput="updatePathSize()">
-<div>
-    <input type="text" value="Some Color" id="colorName">
-    <input type="color" id="colorInput" name="colorInput">
-</div>    
-<button id="colorAdd" onclick="colorAdd('colorInput')">Add Color</button>
-    <div id="colors">
-      <button id="redpath" onclick="updatePathColor('red')">Red</button> 
-      <button id="bluepath" onclick="updatePathColor('blue')">Blue</button>
-      <button id="greenpath" onclick="updatePathColor('green')">Green</button>
-      <button id="yellowpath" onclick="updatePathColor('yellow')">Yellow</button>
-      <button id="pinkpath" onclick="updatePathColor('pink')">Pink</button>
-      <button id="orangepath" onclick="updatePathColor('orange')">Orange</button>
-      <button id="purplepath" onclick="updatePathColor('purple')">Purple</button>
- <button id="graypath" onclick="updatePathColor('gray')">Gray</button>
- <button id="blackpath" onclick="updatePathColor('black')">Black</button>
-<button id="whitepath" onclick="updatePathColor('white')">White</button>
+  
+  <!-- Texture pack dropdown container -->
+  <div id="textureDropdown"></div>
+  
+  <!-- Main container: the canvas is used for both the full-size rendered map (as background) and drawing -->
+  <div class="container">
+    <canvas id="canvas" width="1000" height="760"></canvas>
+    <canvas id="invisibleCanvas"></canvas>
+    <div class="sidebar">
+      <label for="noneCheckbox" class="toggle-btn">
+        <input type="radio" id="noneCheckbox" name="radioGroup" value="option1" checked>
+        None
+      </label>
+      <label for="drawCheckbox" class="toggle-btn">
+        <input type="radio" id="drawCheckbox" name="radioGroup" value="option2">
+        Draw 
+      </label>
+      <label for="lineCheckbox" class="toggle-btn">
+        <input type="radio" id="lineCheckbox" name="radioGroup" value="option3">
+        Line
+      </label>
+      <label for="sizeInput">Size</label>
+      <input type="number" min="1" max="999" value="6" id="sizeInput" oninput="updatePathSize()">
+      <div>
+        <input type="text" value="Some Color" id="colorName">
+        <input type="color" id="colorInput" name="colorInput">
+      </div>    
+      <button id="colorAdd" onclick="colorAdd('colorInput')">Add Color</button>
+      <div id="colors">
+        <button id="redpath" onclick="updatePathColor('red')">Red</button> 
+        <button id="bluepath" onclick="updatePathColor('blue')">Blue</button>
+        <button id="greenpath" onclick="updatePathColor('green')">Green</button>
+        <button id="yellowpath" onclick="updatePathColor('yellow')">Yellow</button>
+        <button id="pinkpath" onclick="updatePathColor('pink')">Pink</button>
+        <button id="orangepath" onclick="updatePathColor('orange')">Orange</button>
+        <button id="purplepath" onclick="updatePathColor('purple')">Purple</button>
+        <button id="graypath" onclick="updatePathColor('gray')">Gray</button>
+        <button id="blackpath" onclick="updatePathColor('black')">Black</button>
+        <button id="whitepath" onclick="updatePathColor('white')">White</button>
+      </div>
     </div>
   </div>
-</div>
-<div id="myModal" class="modal">
+  
+  <div id="myModal" class="modal">
     <div class="modal-content">
-        <div class="modal-textbox">
-            <h2>Info</h2>
-            <p>Zoom out</p>
-			   <p>press N for none</p>
-				<p>Press D to draw</p>
-				<p>press L for line</p>
-
-            <p>Right Click to Erase Balls</p>
-	    <p>You Can Get The Map Code and PNG From <a href = "https://fortunatemaps.herokuapp.com/">Fortunate Maps</a></p>
- 	   <p><a href="https://github.com/BambiTP/StraTAGy">Github</a></p>
-		<p><a href="https://greasyfork.org/en/scripts/467747-fortunate-maps-stratagy">FM Userscript</a></p>
-            <button class="close-button" onclick="closeModal()">Close</button>
-        </div>
-<script>
- var canvas = document.getElementById('canvas');
-        var ctx = canvas.getContext('2d');
-        var mapElements = []; // Global array to store map elements
-        var clickedElements = []; // Global array to store clicked elements
-		  var canvasStates = [];
-        var pathSize = 6; // Default path size
-        var pathColor = "black"; // Default path color
-        var circles = [];
-        var paths = []; // Array to store the paths of freehand drawings
-        var radiusInput = document.getElementById("radiusInput")
-        var isDrawing = false;
-        var selectedCircle = null;
-		 var currentLine = null;
-		var gridSize = 40;
-var toggledElements = [];
-const urlParams = new URLSearchParams(window.location.search);
-const mapCode = urlParams.get('mapCode');
-if (mapCode) {
-  handleJPEGImage(mapCode);
-}
-canvas.style.backgroundImage = "url('74532.jpeg')"; 
-function scanPNGImage(input) {
-            var file = input.files[0];
-            if (file.type !== 'image/png') {
-                alert('Please select a PNG image.');
-                return;
-            }
-
-            var invisibleCanvas = document.getElementById('invisibleCanvas');
-            var invisibleContext = invisibleCanvas.getContext('2d');
-            mapElements = []; // Reset mapElements array
-
-            var img = new Image();
-             img.onload = function() {
-                invisibleCanvas.width = img.width;
-                invisibleCanvas.height = img.height;
-                invisibleContext.drawImage(img, 0, 0);
-
-                var imageData = invisibleContext.getImageData(0, 0, invisibleCanvas.width, invisibleCanvas.height);
-                var pixels = imageData.data;
-
-                for (var i = 0; i < pixels.length; i += 4) {
-                    var red = pixels[i];
-                    var green = pixels[i + 1];
-                    var blue = pixels[i + 2];
-
-                    if (red === 255 && green === 0 && blue === 0) {
-                        // Red flag
-                        mapElements.push({ x: i / 4 % invisibleCanvas.width, y: Math.floor(i / 4 / invisibleCanvas.width), color: 'red' });
-                    } else if (red === 255 && green === 115 && blue === 115) {
-                        // Light red boost
-                        mapElements.push({ x: i / 4 % invisibleCanvas.width, y: Math.floor(i / 4 / invisibleCanvas.width), color: 'lightred' });
-                    } else if (red === 0 && green === 0 && blue === 255) {
-                        // Blue flag
-                        mapElements.push({ x: i / 4 % invisibleCanvas.width, y: Math.floor(i / 4 / invisibleCanvas.width), color: 'blue' });
-                    } else if (red === 115 && green === 115 && blue === 255) {
-                        // Light blue boost
-                        mapElements.push({ x: i / 4 % invisibleCanvas.width, y: Math.floor(i / 4 / invisibleCanvas.width), color: 'lightblue' });
-                    } else if (red === 255 && green === 128 && blue === 0) {
-                        // Orange bomb
-                        mapElements.push({ x: i / 4 % invisibleCanvas.width, y: Math.floor(i / 4 / invisibleCanvas.width), color: 'orange' });
-                    } else if (red === 255 && green === 255 && blue === 0) {
-                        // Yellow boost
-                        mapElements.push({ x: i / 4 % invisibleCanvas.width, y: Math.floor(i / 4 / invisibleCanvas.width), color: 'yellow' });
-                    }
-                }
-
-                console.log(mapElements); // Displaying the results in the console
-
-                // You can perform further actions with the mapElements array here
-            };
-
-            img.src = URL.createObjectURL(file);
-        }
-function handleJPEGImage(mapCode) {
-            var imageUrl = `https://fortunatemaps.herokuapp.com/png/${mapCode}.png`;
-
-            var img = new Image();
-            img.onload = function() {
-                canvas.width = img.width;
-                canvas.height = img.height;
-                ctx.drawImage(img, 0, 0);
-                canvas.style.backgroundImage = "url('" + img.src + "')";
-            };
-
-            img.src = imageUrl;
-        }
-function handleCanvasClick(event) {
-  var rect = canvas.getBoundingClientRect();
-  var x = Math.floor((event.clientX - rect.left) / 40);
-  var y = Math.floor((event.clientY - rect.top) / 40);
-
-  toggleMapElement(x, y);
-}
-function toggleMapElement(x, y) {
-            // Find the clicked map element
-            var clickedElement = mapElements.find(function(element) {
-                return element.x === x && element.y === y;
-            });
-
-            if (clickedElement) {
-                var imageUrl = getImageUrlByColor(clickedElement.color);
-                if (imageUrl) {
-                    // Check if the map element is already toggled
-                    var isToggled = clickedElement.toggled || false;
-
-                    if (isToggled) {
-                        // Clear the grid square to show the background
-                        ctx.clearRect(x * 40, y * 40, 40, 40);
-                        clickedElement.toggled = false;
-
-                        // Remove the element from the toggledElements array
-                        var index = toggledElements.findIndex(function(element) {
-                            return element.x === x && element.y === y;
-                        });
-                        if (index !== -1) {
-                            toggledElements.splice(index, 1);
-                        }
-                    } else {
-                        // Toggle the map element with the image
-                        var image = new Image();
-                        image.onload = function() {
-                            // Set the grid square to white
-                            ctx.fillStyle = '#d4d4d4';
-                            ctx.fillRect(x * 40, y * 40, 39, 39);
-
-                            // Draw the image
-                          ctx.drawImage(image, x * 40, y * 40, 39, 39);
-                            clickedElement.toggled = true;
-
-                            // Add the element to the toggledElements array
-                            toggledElements.push(clickedElement);
-                        };
-                        image.src = imageUrl;
-                    }
-                }
-            }
-        }
-
- function getImageUrlByColor(color) {
-            var imageUrls = {
-                red: 'red.png',
-                lightred: 'lightred.png',
-                blue: 'blue.png',
-                lightblue: 'lightblue.png',
-                orange: 'orange.png',
-                yellow: 'yellow.png'
-            };
-
-            return imageUrls[color] || null;
-        }
-// Add a click event listener to the canvas
-canvas.addEventListener('click', handleCanvasClick);
-function redrawToggledElements() {
-  // Redraw the toggled map elements
-  toggledElements.forEach(function(element) {
-    ctx.fillStyle = '#d4d4d4';
-    ctx.fillRect(element.x * gridSize, element.y * gridSize, gridSize, gridSize);
-
-    var imageUrl = getImageUrlByColor(element.color);
-    if (imageUrl) {
-      var image = new Image();
-      image.onload = function() {
-        ctx.drawImage(image, element.x * gridSize, element.y * gridSize, gridSize, gridSize);
-      };
-      image.src = imageUrl;
+      <div class="modal-textbox">
+        <h2>Info</h2>
+        <p>Zoom out</p>
+        <p>Press N for none</p>
+        <p>Press D to draw</p>
+        <p>Press L for line</p>
+        <p>Right Click to Erase Balls</p>
+        <p>You Can Get The Map Code and PNG From <a href="https://fortunatemaps.herokuapp.com/">Fortunate Maps</a></p>
+        <p><a href="https://github.com/BambiTP/StraTAGy">Github</a></p>
+        <p><a href="https://greasyfork.org/en/scripts/467747-fortunate-maps-stratagy">FM Userscript</a></p>
+        <button class="close-button" onclick="closeModal()">Close</button>
+      </div>
+    </div>
+  </div>
+  
+  <footer class="toolbar-bottom">
+    <button id="red" onclick="addCircle('red')">Red Ball</button>
+    <button id="blue" onclick="addCircle('blue')">Blue Ball</button>
+    <button id="green" onclick="addCircle('green')">Green Ball</button>
+    <label for="radiusInput">Radius</label>
+    <input type="number" min="1" max="999" value="20" id="radiusInput" oninput="updateRadiusValue()">
+    <button id="clearButton" onclick="clearPaths()">Clear Lines</button>
+    <button id="clearButton" onclick="clearCanvas()">Clear All</button>
+    <button id="undoButton" onclick="undo()">Undo</button>
+    <div id="colorDisplay"></div>
+    <div class="misc">
+      <button id="Info" onclick="openModal()">Info</button>
+      <button id="open-form-button">Open Suggestion Form</button>
+    </div>
+  </footer>
+  
+  <script>
+    // =====================================================
+    // DRAWING FUNCTIONALITY (original code, modified)
+    // =====================================================
+    var canvas = document.getElementById('canvas');
+    var ctx = canvas.getContext('2d');
+    var invisibleCanvas = document.getElementById('invisibleCanvas');
+    var mapElements = []; // For PNG scanning (if used)
+    var toggledElements = [];
+    var circles = [];
+    var paths = []; // For freehand drawing
+    var canvasStates = [];
+    var pathSize = 6; // Default size for paths
+    var pathColor = "black"; // Default path color
+    var radiusInput = document.getElementById("radiusInput");
+    var isDrawing = false;
+    var selectedCircle = null;
+    var currentLine = null;
+    var gridSize = 40;
+    
+    // NEW global: finalMapImage stores the full‑size rendered map (as background)
+    var finalMapImage = null;
+    
+    // Instead of the old handleJPEGImage, we will load the map using PNG/JSON.
+    // (The original call using URL params is now commented out.)
+    // const urlParams = new URLSearchParams(window.location.search);
+    // const mapCodeParam = urlParams.get('mapCode');
+    // if (mapCodeParam) { loadMap(); }
+    
+    // When clearing the canvas, we now re‑draw the background map if available.
+    function drawCanvas() {
+      // Clear and then draw the final map background if it exists.
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      if(finalMapImage){
+        ctx.drawImage(finalMapImage, 0, 0, canvas.width, canvas.height);
+      }
+      redrawToggledElements();
+      drawCircles();
+      drawPaths();
     }
-  });
-}
-
-function addCircle(color) {
-            var x = Math.floor(Math.random() * canvas.width);
-            var y = Math.floor(Math.random() * canvas.height);
-            var radius = Number(radiusInput.value);
-            var circle = { x: x, y: y,radius: radius, color: color };
-            circles.push(circle);
-            drawCanvas();
+    
+    function addCircle(color) {
+      var x = Math.floor(Math.random() * canvas.width);
+      var y = Math.floor(Math.random() * canvas.height);
+      var radius = Number(radiusInput.value);
+      var circle = { x: x, y: y, radius: radius, color: color };
+      circles.push(circle);
+      drawCanvas();
+    }
+    
+    function drawCircle(circle) {
+      ctx.beginPath();
+      ctx.arc(circle.x, circle.y, circle.radius, 0, Math.PI * 2);
+      ctx.fillStyle = circle.color;
+      ctx.fill();
+      ctx.closePath();
+    }
+    
+    function drawCircles() {
+      for (var i = 0; i < circles.length; i++) {
+        drawCircle(circles[i]);
+      }
+    }
+    
+    function drawPaths() {
+      for (var i = 0; i < paths.length; i++) {
+        ctx.strokeStyle = paths[i].color;
+        ctx.lineWidth = paths[i].size;
+        ctx.stroke(paths[i].path);
+      }
+    }
+    
+    function redrawToggledElements() {
+      toggledElements.forEach(function(element) {
+        ctx.fillStyle = '#d4d4d4';
+        ctx.fillRect(element.x * 40, element.y * 40, 40, 40);
+        var imageUrl = getImageUrlByColor(element.color);
+        if (imageUrl) {
+          var image = new Image();
+          image.onload = function() {
+            ctx.drawImage(image, element.x * 40, element.y * 40, 40, 40);
+          };
+          image.src = imageUrl;
         }
-
-        function drawCircle(circle) {
-            ctx.beginPath();
-            ctx.arc(circle.x, circle.y, circle.radius, 0, Math.PI * 2);
-            ctx.fillStyle = circle.color;
-            ctx.fill();
-            ctx.closePath();
+      });
+    }
+    
+    function clearPaths() {
+      paths = [];
+      drawCanvas();
+    }
+    
+    function clearCanvas() {
+      circles = [];
+      paths = [];
+      drawCanvas();
+    }
+    
+    function updatePathSize() {
+      pathSize = Number(document.getElementById("sizeInput").value);
+    }
+    
+    function updatePathColor(color) {
+      pathColor = color;
+      document.documentElement.style.setProperty('--path-color', color);
+    }
+    
+    function colorAdd(colorInput) {
+      var colorInputElem = document.getElementById(colorInput);
+      var color = colorInputElem.value;
+      var colorName = document.getElementById("colorName");
+      var colorsDiv = document.getElementById("colors");
+      var colorButton = document.createElement("button");
+      colorButton.style.padding = "10px 20px";
+      colorButton.style.fontSize = "25px";
+      colorButton.style.color = "white";
+      colorButton.style.border = "none";
+      colorButton.style.borderRadius = "4px";
+      colorButton.style.cursor = "pointer";
+      colorButton.style.marginRight = "10px";
+      colorButton.style.backgroundColor = color;
+      colorButton.onclick = function() {
+        updatePathColor(color);
+      };
+      var buttonText = document.createTextNode(colorName.value);
+      colorButton.appendChild(buttonText);
+      colorsDiv.appendChild(colorButton);
+    }
+    
+    function getImageUrlByColor(color) {
+      var imageUrls = {
+        red: 'red.png',
+        lightred: 'lightred.png',
+        blue: 'blue.png',
+        lightblue: 'lightblue.png',
+        orange: 'orange.png',
+        yellow: 'yellow.png'
+      };
+      return imageUrls[color] || null;
+    }
+    
+    function removeCircle(event) {
+      var rect = canvas.getBoundingClientRect();
+      var mouseX = event.clientX - rect.left;
+      var mouseY = event.clientY - rect.top;
+      for (var i = 0; i < circles.length; i++) {
+        var circle = circles[i];
+        var distance = Math.sqrt(Math.pow(mouseX - circle.x, 2) + Math.pow(mouseY - circle.y, 2));
+        if (distance <= circle.radius) {
+          circles.splice(i, 1);
+          drawCanvas();
+          break;
         }
-
-        function drawCircles() {
-            for (var i = 0; i < circles.length; i++) {
-                drawCircle(circles[i]);
-            }
+      }
+    }
+    
+    function undo() {
+      if (paths.length > 0) {
+        paths.pop();
+        drawCanvas();
+      }
+    }
+    
+    canvas.addEventListener("contextmenu", function(event) {
+      event.preventDefault();
+      removeCircle(event);
+    });
+    
+    function selectCircle(event) {
+      var rect = canvas.getBoundingClientRect();
+      var mouseX = event.clientX - rect.left;
+      var mouseY = event.clientY - rect.top;
+      for (var i = 0; i < circles.length; i++) {
+        var circle = circles[i];
+        var distance = Math.sqrt(Math.pow(mouseX - circle.x, 2) + Math.pow(mouseY - circle.y, 2));
+        if (distance <= circle.radius) {
+          selectedCircle = circle;
+          break;
         }
-
-        function drawPaths() {
-            for (var i = 0; i < paths.length; i++) {
-                ctx.strokeStyle = paths[i].color; 
-                ctx.lineWidth = paths[i].size; 
-                ctx.stroke(paths[i].path);
-            }
-        }
-
-        function drawCanvas() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-redrawToggledElements();
-            drawCircles();
-            drawPaths();
-
-        }
-
-        function removeCircle(event) {
-            var rect = canvas.getBoundingClientRect();
-            var mouseX = event.clientX - rect.left;
-            var mouseY = event.clientY - rect.top;
-            for (var i = 0; i < circles.length; i++) {
-                var circle = circles[i];
-                var distance = Math.sqrt(Math.pow(mouseX - circle.x, 2) + Math.pow(mouseY - circle.y, 2));
-                if (distance <= circle.radius) {
-                    circles.splice(i, 1);
-                    drawCanvas();
-                    break;
-                }
-            }
-        }
-function undo() {
-            if (paths.length > 0) {
-                paths.pop(); // Remove the last path
-
-                // Clear the canvas
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-				redrawToggledElements();
-                // Redraw the balls
-                drawCircles();
-
-                // Redraw the remaining paths
-                drawPaths();
-
-			
-            }
-        }
-
-        canvas.addEventListener("contextmenu", function(event) {
-            event.preventDefault();
-            removeCircle(event);
-        });
-
-        function selectCircle(event) {
-            var rect = canvas.getBoundingClientRect();
-            var mouseX = event.clientX - rect.left;
-            var mouseY = event.clientY - rect.top;
-            for (var i = 0; i < circles.length; i++) {
-                var circle = circles[i];
-                var distance = Math.sqrt(Math.pow(mouseX - circle.x, 2) + Math.pow(mouseY - circle.y, 2));
-                if (distance <= circle.radius) {
-                    selectedCircle = circle;
-                    break;
-                }
-            }
-        }
-
-        function moveCircle(event) {
-            if (selectedCircle) {
-                var rect = canvas.getBoundingClientRect();
-                selectedCircle.x = event.clientX - rect.left;
-                selectedCircle.y = event.clientY - rect.top;
-                drawCanvas(); // redraw the canvas with the updated circle position
-            }
-        }
-
-      function getStart(event) {
-  var path = {
-    path: new Path2D(),
-    color: pathColor,
-    size: pathSize
-  };
-  path.path.moveTo(event.clientX - canvas.getBoundingClientRect().left, event.clientY - canvas.getBoundingClientRect().top);
-  paths.push(path);
-}
-
-function drawLine(event) {
-  var lastPath = paths[paths.length - 1];
-  lastPath.path.lineTo(event.clientX - canvas.getBoundingClientRect().left, event.clientY - canvas.getBoundingClientRect().top);
-  ctx.strokeStyle = lastPath.color;
-  ctx.lineWidth = lastPath.size;
-  ctx.stroke(lastPath.path);
-}
-
-        function clearPaths() {
-            paths = []; // Empty the paths array
-            drawCanvas(); // Redraw the canvas without the paths
-        }
-
-        function clearCanvas() {
-            circles = []; // Empty the circles array
-            paths = []; // Empty the paths array
-            ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the entire canvas
-        }
-
-        function updatePathSize() {
-            pathSize = Number(document.getElementById("sizeInput").value);
-        }
- function updatePathColor(color) {
-  pathColor = color;
-  document.documentElement.style.setProperty('--path-color', color);
-}
-function colorAdd(colorInput) {
-  var colorInput = document.getElementById(colorInput);
-  var color = colorInput.value;
-  var colorName = document.getElementById("colorName");
-  var colorsDiv = document.getElementById("colors");
-  var colorButton = document.createElement("button");
-  colorButton.style.padding = "10px 20px";
-  colorButton.style.fontSize = "25px";
-  colorButton.style.color = "white";
-  colorButton.style.border = "none";
-  colorButton.style.borderRadius = "4px";
-  colorButton.style.cursor = "pointer";
-  colorButton.style.marginRight = "10px";
-  colorButton.style.backgroundColor = color;
-  colorButton.onclick = function() {
-    updatePathColor(color);
-  };
-
-  var buttonText = document.createTextNode(colorName.value);
-  colorButton.appendChild(buttonText);
-
-  colorsDiv.appendChild(colorButton);
-}
-        canvas.addEventListener("mousedown", function(event) {
-            if (event.button === 0) {
-                selectCircle(event);
-                if (document.getElementById("drawCheckbox").checked)
-                    isDrawing = true;
-                getStart(event);
-            }
-        });
-
-        canvas.addEventListener("mousemove", function(event) {
-            moveCircle(event);
-            if (isDrawing)
-                drawLine(event);
-        });
-
-        canvas.addEventListener("mouseup", function(event) {
-            selectedCircle = null;
-            isDrawing = false;
-        });
-
-	 var isDrawingLine = false;
-        var lineStartX = 0;
-        var lineStartY = 0;
-
-        function startDrawingLine(event) {
-  if (event.button === 0 && document.getElementById("lineCheckbox").checked) {
-    isDrawingLine = true;
-    lineStartX = event.clientX - canvas.getBoundingClientRect().left;
-    lineStartY = event.clientY - canvas.getBoundingClientRect().top;
-  }
-}
-
-function drawLinePreview(event) {
-  if (isDrawingLine) {
-    var rect = canvas.getBoundingClientRect();
-    var lineEndX = event.clientX - rect.left;
-    var lineEndY = event.clientY - rect.top;
-
-    // Clear the canvas
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    // Redraw the balls
-redrawToggledElements();
-    drawCircles();
-
-    // Redraw the existing paths
-    drawPaths();
-
-
-    // Draw the preview line
-    ctx.beginPath();
-    ctx.moveTo(lineStartX, lineStartY);
-    ctx.lineTo(lineEndX, lineEndY);
-    ctx.strokeStyle = pathColor;
-    ctx.lineWidth = pathSize;
-    ctx.stroke();
-  }
-}
-
-function finishDrawingLine(event) {
-  if (isDrawingLine) {
-    isDrawingLine = false;
-    var lineEndX = event.clientX - canvas.getBoundingClientRect().left;
-    var lineEndY = event.clientY - canvas.getBoundingClientRect().top;
-
-    // Create a new path for the line
-    var path = {
-      path: new Path2D(),
-      color: pathColor,
-      size: pathSize
-    };
-    path.path.moveTo(lineStartX, lineStartY);
-    path.path.lineTo(lineEndX, lineEndY);
-    paths.push(path);
-
-    // Clear the canvas
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    // Redraw the balls
-redrawToggledElements();
-    drawCircles();
-
-    // Redraw all paths
-    drawPaths();
-
-  }
-}
-
-        canvas.addEventListener("mousedown", startDrawingLine);
-        canvas.addEventListener("mousemove", drawLinePreview);
-        canvas.addEventListener("mouseup", finishDrawingLine);
-
-function openModal() {
-  const modal = document.getElementById('myModal');
-  modal.style.display = 'block';
-}
-function closeModal() {
-  const modal = document.getElementById('myModal');
-  modal.style.display = 'none';
-}
-	    document.addEventListener('keydown', function(event) {
+      }
+    }
+    
+    function moveCircle(event) {
+      if (selectedCircle) {
+        var rect = canvas.getBoundingClientRect();
+        selectedCircle.x = event.clientX - rect.left;
+        selectedCircle.y = event.clientY - rect.top;
+        drawCanvas();
+      }
+    }
+    
+    function getStart(event) {
+      var path = {
+        path: new Path2D(),
+        color: pathColor,
+        size: pathSize
+      };
+      path.path.moveTo(event.clientX - canvas.getBoundingClientRect().left,
+                       event.clientY - canvas.getBoundingClientRect().top);
+      paths.push(path);
+    }
+    
+    function drawLine(event) {
+      var lastPath = paths[paths.length - 1];
+      lastPath.path.lineTo(event.clientX - canvas.getBoundingClientRect().left,
+                           event.clientY - canvas.getBoundingClientRect().top);
+      ctx.strokeStyle = lastPath.color;
+      ctx.lineWidth = lastPath.size;
+      ctx.stroke(lastPath.path);
+    }
+    
+    var isDrawingLine = false;
+    var lineStartX = 0;
+    var lineStartY = 0;
+    
+    function startDrawingLine(event) {
+      if (event.button === 0 && document.getElementById("lineCheckbox").checked) {
+        isDrawingLine = true;
+        lineStartX = event.clientX - canvas.getBoundingClientRect().left;
+        lineStartY = event.clientY - canvas.getBoundingClientRect().top;
+      }
+    }
+    
+    function drawLinePreview(event) {
+      if (isDrawingLine) {
+        var rect = canvas.getBoundingClientRect();
+        var lineEndX = event.clientX - rect.left;
+        var lineEndY = event.clientY - rect.top;
+        drawCanvas();
+        ctx.beginPath();
+        ctx.moveTo(lineStartX, lineStartY);
+        ctx.lineTo(lineEndX, lineEndY);
+        ctx.strokeStyle = pathColor;
+        ctx.lineWidth = pathSize;
+        ctx.stroke();
+      }
+    }
+    
+    function finishDrawingLine(event) {
+      if (isDrawingLine) {
+        isDrawingLine = false;
+        var lineEndX = event.clientX - canvas.getBoundingClientRect().left;
+        var lineEndY = event.clientY - canvas.getBoundingClientRect().top;
+        var path = {
+          path: new Path2D(),
+          color: pathColor,
+          size: pathSize
+        };
+        path.path.moveTo(lineStartX, lineStartY);
+        path.path.lineTo(lineEndX, lineEndY);
+        paths.push(path);
+        drawCanvas();
+      }
+    }
+    
+    canvas.addEventListener("mousedown", function(event) {
+      if (event.button === 0) {
+        selectCircle(event);
+        if (document.getElementById("drawCheckbox").checked)
+          isDrawing = true;
+        getStart(event);
+      }
+    });
+    
+    canvas.addEventListener("mousemove", function(event) {
+      moveCircle(event);
+      if (isDrawing)
+        drawLine(event);
+    });
+    
+    canvas.addEventListener("mouseup", function(event) {
+      selectedCircle = null;
+      isDrawing = false;
+    });
+    
+    canvas.addEventListener("mousedown", startDrawingLine);
+    canvas.addEventListener("mousemove", drawLinePreview);
+    canvas.addEventListener("mouseup", finishDrawingLine);
+    
+    document.addEventListener('keydown', function(event) {
       if (event.ctrlKey && event.key === 'z') {
-        // Perform your undo function here
         undo();
       }
     });
-
-	  function loadMap() {
-            var mapCodeInput = document.getElementById('mapCode');
-            var mapCode = mapCodeInput.value;
-            handleJPEGImage(mapCode);
-        }
-const toggleBtns = document.querySelectorAll('.toggle-btn');
-  toggleBtns.forEach((btn) => {
-    btn.addEventListener('click', () => {
-      toggleBtns.forEach((btn) => btn.classList.remove('active'));
-      btn.classList.add('active');
+    
+    document.addEventListener('keydown', function(event) {
+      const key = event.key.toLowerCase();
+      if (key === 'n') {
+        document.getElementById('noneCheckbox').checked = true;
+        document.querySelectorAll('.toggle-btn').forEach(function(label) {
+          label.classList.remove('active');
+        });
+        document.querySelector('label[for="noneCheckbox"]').classList.add('active');
+      } else if (key === 'd') {
+        document.getElementById('drawCheckbox').checked = true;
+        document.querySelectorAll('.toggle-btn').forEach(function(label) {
+          label.classList.remove('active');
+        });
+        document.querySelector('label[for="drawCheckbox"]').classList.add('active');
+      } else if (key === 'l') {
+        document.getElementById('lineCheckbox').checked = true;
+        document.querySelectorAll('.toggle-btn').forEach(function(label) {
+          label.classList.remove('active');
+        });
+        document.querySelector('label[for="lineCheckbox"]').classList.add('active');
+      }
     });
-  });
-
-document.getElementById('open-form-button').addEventListener('click', function() {
-  var formUrl = "https://docs.google.com/forms/d/e/1FAIpQLSdm2Icwdfmm_JpkOpDuu4hxWPyiYnZDoCEZq22FhXl0gKtY4A/viewform?embedded=true"; // Replace with your Google Forms URL
-  var windowFeatures = "width=600,height=400"; // Customize the popup window size as needed
-  
-  // Open a new window or modal dialog with the embedded Google Forms
-  window.open(formUrl, "_blank", windowFeatures);
-});
-document.addEventListener('keydown', function(event) {
-    const key = event.key.toLowerCase();
-    if (key === 'n') {
-      document.getElementById('noneCheckbox').checked = true;
-      document.querySelectorAll('.toggle-btn').forEach(function(label) {
-        label.classList.remove('active');
-      });
-      document.querySelector('label[for="noneCheckbox"]').classList.add('active');
-    } else if (key === 'd') {
-      document.getElementById('drawCheckbox').checked = true;
-      document.querySelectorAll('.toggle-btn').forEach(function(label) {
-        label.classList.remove('active');
-      });
-      document.querySelector('label[for="drawCheckbox"]').classList.add('active');
-    } else if (key === 'l') {
-      document.getElementById('lineCheckbox').checked = true;
-      document.querySelectorAll('.toggle-btn').forEach(function(label) {
-        label.classList.remove('active');
-      });
-      document.querySelector('label[for="lineCheckbox"]').classList.add('active');
+    
+    function openModal() {
+      document.getElementById('myModal').style.display = 'block';
     }
-  });
-
-    </script>
+    
+    function closeModal() {
+      document.getElementById('myModal').style.display = 'none';
+    }
+    
+    document.getElementById('open-form-button').addEventListener('click', function() {
+      var formUrl = "https://docs.google.com/forms/d/e/1FAIpQLSdm2Icwdfmm_JpkOpDuu4hxWPyiYnZDoCEZq22FhXl0gKtY4A/viewform?embedded=true";
+      window.open(formUrl, "_blank", "width=600,height=400");
+    });
+    
+    // =====================================================
+    // MAP PROCESSING & TEXTURE PACK DROPDOWN (new code)
+    // =====================================================
+    
+    // Base URL for texture images.
+    const baseUrl = "https://static.koalabeast.com";
+    
+    // Configuration for map rendering.
+    const configMap = {
+      tileSize: 40,
+      quadSize: 20
+    };
+    
+    // Floor tiles mapping.
+    const floorTiles = {
+      "d4d4d4": { y: 4, x: 13 },
+      "808000": { y: 1, x: 13 },
+      "ff0000": { y: 1, x: 14 },
+      "0000ff": { y: 1, x: 15 },
+      "373737": { y: 0, x: 12 },
+      "202020": { y: 0, x: 13 },
+      "b90000": { y: 5, x: 14 },
+      "190094": { y: 5, x: 15 },
+      "dcbaba": { y: 4, x: 14 },
+      "bbb8dd": { y: 4, x: 15 },
+      "dcdcba": { y: 5, x: 13 },
+      "00ff00": { y: 4, x: 12 },
+      "b97a57": { y: 6, x: 13 },
+      "ff8000": { y: 1, x: 12 },
+      "007500_empty": { y: 3, x: 12 },
+      "007500_green": { y: 3, x: 13 },
+      "007500_red":   { y: 3, x: 14 },
+      "007500_blue":  { y: 3, x: 15 },
+      "8080ff":       { y: 8, x: 14 },
+      "656500":       { y: 6, x: 14 }
+    };
+    
+    // Texture packs definition.
+    const textures = {
+      texturePacks: [
+        {"name":"Classic","author":"LuckySpammer","url":"classic","tiles":"/textures/classic/tiles.png","speedpad":"/textures/classic/speedpad.png","speedpadRed":"/textures/classic/speedpadred.png","speedpadBlue":"/textures/classic/speedpadblue.png","portal":"/textures/classic/portal.png","portalRed":"/textures/classic/portalred.png","portalBlue":"/textures/classic/portalblue.png","splats":"/textures/classic/splats.png","popularity":3259028385,"popularityScore":"3259"},
+        {"name":"Sniper Pack","author":"DOKE","url":"sniperpack","tiles":"/textures/sniperpack/tiles.png","speedpad":"/textures/sniperpack/speedpad.png","speedpadRed":"/textures/sniperpack/speedpadred.png","speedpadBlue":"/textures/sniperpack/speedpadblue.png","portal":"/textures/sniperpack/portal.png","portalRed":"/textures/sniperpack/portalred.png","portalBlue":"/textures/sniperpack/portalblue.png","splats":"/textures/sniperpack/splats.png","popularity":1437466820,"popularityScore":"1437"},
+        {"name":"Return","author":"Flaccid Trip","url":"return","tiles":"/textures/return/tiles.png","speedpad":"/textures/return/speedpad.png","speedpadRed":"/textures/return/speedpadred.png","speedpadBlue":"/textures/return/speedpadblue.png","portal":"/textures/return/portal.png","portalRed":"/textures/return/portalred.png","portalBlue":"/textures/return/portalblue.png","splats":"/textures/return/splats.png","popularity":149148,"popularityScore":"0"}
+      ]
+    };
+    
+    const wallTypes = {
+      "787878": { wallSolids: 0xff },
+      "804070": { wallSolids: 0x2d },
+      "408050": { wallSolids: 0xd2 },
+      "405080": { wallSolids: 0x4b },
+      "807040": { wallSolids: 0xb4 }
+    };
+    
+    const quadrantCoords = {
+      "132": [10.5, 7.5],
+      "232": [11, 7.5],
+      "332": [11, 8],
+      "032": [10.5, 8],
+      "132d": [0.5, 3.5],
+      "232d": [1, 3.5],
+      "032d": [0.5, 4],
+      "143": [4.5, 9.5],
+      "243": [5, 9.5],
+      "343": [5, 10],
+      "043": [4.5, 10],
+      "143d": [1.5, 2.5],
+      "243d": [2, 2.5],
+      "043d": [1.5, 3],
+      "154": [6.5, 9.5],
+      "254": [7, 9.5],
+      "354": [7, 10],
+      "054": [6.5, 10],
+      "154d": [9.5, 2.5],
+      "254d": [10, 2.5],
+      "354d": [10, 3],
+      "165": [0.5, 7.5],
+      "265": [1, 7.5],
+      "365": [1, 8],
+      "065": [0.5, 8],
+      "165d": [10.5, 3.5],
+      "265d": [11, 3.5],
+      "365d": [11, 4],
+      "176": [1.5, 6.5],
+      "276": [2, 6.5],
+      "376": [2, 7],
+      "076": [1.5, 7],
+      "276d": [9, 1.5],
+      "376d": [9, 2],
+      "076d": [8.5, 2],
+      "107": [6.5, 8.5],
+      "207": [7, 8.5],
+      "307": [7, 9],
+      "007": [6.5, 9],
+      "207d": [11, 1.5],
+      "307d": [11, 2],
+      "007d": [10.5, 2],
+      "110": [4.5, 8.5],
+      "210": [5, 8.5],
+      "310": [5, 9],
+      "010": [4.5, 9],
+      "110d": [0.5, 1.5],
+      "310d": [1, 2],
+      "010d": [0.5, 2],
+      "121": [9.5, 6.5],
+      "221": [10, 6.5],
+      "321": [10, 7],
+      "021": [9.5, 7],
+      "121d": [2.5, 1.5],
+      "321d": [3, 2],
+      "021d": [2.5, 2],
+      "142": [1.5, 7.5],
+      "242": [2, 7.5],
+      "042": [1.5, 8],
+      "142d": [10.5, 0.5],
+      "242d": [11, 0.5],
+      "042d": [10.5, 1],
+      "153": [5.5, 6.5],
+      "253": [6, 6.5],
+      "353": [6, 7],
+      "053": [5.5, 7],
+      "153d": [5.5, 0.5],
+      "253d": [6, 0.5],
+      "164": [9.5, 7.5],
+      "264": [10, 7.5],
+      "364": [10, 8],
+      "164d": [0.5, 0.5],
+      "264d": [1, 0.5],
+      "364d": [1, 1],
+      "175": [4.5, 5.5],
+      "275": [5, 5.5],
+      "375": [5, 6],
+      "075": [4.5, 6],
+      "275d": [7, 1.5],
+      "375d": [7, 2],
+      "206": [4.5, 9.5],
+      "306": [4.5, 10],
+      "006": [3.5, 10],
+      "206d": [2, 3.5],
+      "306d": [2, 4],
+      "006d": [1.5, 4],
+      "117": [5.5, 2.5],
+      "217": [6, 2.5],
+      "317": [6, 4],
+      "017": [5.5, 4],
+      "317d": [6, 3],
+      "017d": [5.5, 3],
+      "120": [7.5, 9.5],
+      "320": [8, 10],
+      "020": [7.5, 10],
+      "120d": [9.5, 3.5],
+      "320d": [10, 4],
+      "020d": [9.5, 4],
+      "131": [6.5, 5.5],
+      "231": [7, 5.5],
+      "331": [7, 6],
+      "031": [6.5, 6],
+      "131d": [4.5, 1.5],
+      "031d": [4.5, 2],
+      "141": [7.5, 8.5],
+      "241": [8, 8.5],
+      "323": [4, 5],
+      "041": [7.5, 9],
+      "141d": [8.5, 3.5],
+      "041d": [8.5, 4],
+      "152": [8.5, 7.5],
+      "252": [9, 7.5],
+      "334": [2, 0],
+      "052": [8.5, 8],
+      "152d": [3.5, 0.5],
+      "252d": [4, 0.5],
+      "163": [2, 7.5],
+      "263": [3, 7.5],
+      "363": [3, 8],
+      "045": [9.5, 0],
+      "163d": [7.5, 0.5],
+      "263d": [8, 0.5],
+      "174": [3.5, 8.5],
+      "274": [4, 8.5],
+      "374": [4, 9],
+      "056": [7.5, 5],
+      "274d": [3, 3.5],
+      "374d": [3, 4],
+      "167": [7.5, 6.5],
+      "205": [10, 8.5],
+      "305": [10, 9],
+      "005": [9.5, 9],
+      "205d": [2, 0.5],
+      "305d": [2, 1],
+      "170": [6.5, 7.5],
+      "216": [9, 9.5],
+      "316": [9, 10],
+      "016": [8.5, 10],
+      "316d": [10, 5],
+      "016d": [9.5, 5],
+      "127": [2.5, 9.5],
+      "201": [5, 7.5],
+      "327": [3, 10],
+      "027": [2.5, 10],
+      "327d": [2, 5],
+      "027d": [1.5, 5],
+      "130": [1.5, 8.5],
+      "212": [4, 6.5],
+      "330": [2, 9],
+      "030": [1.5, 9],
+      "130d": [9.5, 0.5],
+      "030d": [9.5, 1],
+      "151": [10.5, 9.5],
+      "251": [11, 9.5],
+      "324": [0, 7],
+      "051": [10.5, 10],
+      "151d": [10.5, 4.5],
+      "324d": [0, 0],
+      "162": [8.5, 10.5],
+      "262": [9, 10.5],
+      "335": [6, 8],
+      "035": [5.5, 8],
+      "162d": [3.5, 2.5],
+      "262d": [8, 2.5],
+      "173": [0.5, 9.5],
+      "273": [1, 9.5],
+      "373": [1, 10],
+      "046": [11.5, 7],
+      "046d": [11.5, 0],
+      "273d": [1, 4.5],
+      "157": [11.5, 8.5],
+      "204": [0, 5.5],
+      "304": [0, 5],
+      "057": [11.5, 9],
+      "204d": [0, 4.5],
+      "304d": [0, 6],
+      "160": [11.5, 7.5],
+      "215": [8, 6.5],
+      "315": [8, 7],
+      "015": [7.5, 7],
+      "160d": [2.5, 4.5],
+      "315d": [9, 3],
+      "171": [5.5, 10.5],
+      "271": [6, 10.5],
+      "326": [6, 5],
+      "026": [5.5, 5],
+      "326d": [7, 5],
+      "026d": [4.5, 5],
+      "137": [3.5, 6.5],
+      "202": [0, 7.5],
+      "337": [4, 7],
+      "037": [3.5, 7],
+      "202d": [9, 4.5],
+      "037d": [2.5, 3],
+      "140": [11.5, 5.5],
+      "213": [0, 8.5],
+      "313": [0, 9],
+      "040": [11.5, 5],
+      "140d": [11.5, 4.5],
+      "040d": [11.5, 6],
+      "161": [9.5, 10.5],
+      "261": [10, 10.5],
+      "325": [9, 6],
+      "025": [8.5, 6],
+      "161d": [3.5, 1.5],
+      "325d": [4, 1],
+      "172": [1.5, 10.5],
+      "272": [2, 10.5],
+      "336": [3, 6],
+      "036": [2.5, 6],
+      "036d": [7.5, 1],
+      "272d": [8, 1.5],
+      "147": [4.5, 7.5],
+      "203": [4, 3.5],
+      "303": [4, 4],
+      "047": [4.5, 8],
+      "047d": [8.5, 5],
+      "203d": [8, 4.5],
+      "150": [7.5, 3.5],
+      "214": [7, 7.5],
+      "314": [7, 8],
+      "050": [7.5, 4],
+      "150d": [3.5, 4.5],
+      "314d": [3, 5],
+      "100": [5.5, 5.5],
+      "200": [6, 5.5],
+      "300": [6, 6],
+      "000": [5.5, 6],
+      "100d": [5.5, 8.5],
+      "200d": [6, 8.5],
+      "300d": [6, 10],
+      "000d": [5.5, 10]
+    };
+    
+    // Global images for textures.
+    var images = {
+      tile: null,
+      speedpad: null,
+      speedpadRed: null,
+      speedpadBlue: null,
+      portal: null,
+      portalRed: null,
+      portalBlue: null
+    };
+    
+    // Global variables for map processing.
+    var mapJSONData = null;
+    var wallMap = [];
+    
+    // Set current texture pack from localStorage if available.
+    var currentTexturePack = textures.texturePacks[0];
+    var savedTexture = localStorage.getItem('fm_selected_texturePack');
+    if (savedTexture) {
+      var found = textures.texturePacks.find(tp => tp.url === savedTexture);
+      if(found){
+        currentTexturePack = found;
+        console.log("[FM] Loaded saved texture pack:", currentTexturePack.name);
+      }
+    }
+    
+    // Utility: waitForElement (unchanged)
+    function waitForElement(selector, callback, timeout = 10000) {
+      const start = Date.now();
+      (function check() {
+        const el = document.querySelector(selector);
+        if (el) {
+          callback(el);
+        } else if (Date.now() - start > timeout) {
+          console.warn("Timeout waiting for element:", selector);
+        } else {
+          setTimeout(check, 200);
+        }
+      })();
+    }
+    
+    function rgbToHex(r, g, b) {
+      return ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+    }
+    
+    // loadImage prepends baseUrl if needed.
+    function loadImage(url) {
+      if (url.startsWith("/")) {
+        url = baseUrl + url;
+      }
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.crossOrigin = "anonymous";
+        img.onload = () => {
+          console.log("[FM] Loaded image:", url);
+          resolve(img);
+        };
+        img.onerror = (e) => {
+          console.error("[FM] Error loading image:", url, e);
+          reject(e);
+        };
+        img.src = url;
+      });
+    }
+    
+    function getFloorTile(key) {
+      if (key === "ffff00") {
+        return { image: images.speedpad, y: 0, x: 0 };
+      } else if (key === "ff7373") {
+        return { image: images.speedpadRed, y: 0, x: 0 };
+      } else if (key === "7373ff") {
+        return { image: images.speedpadBlue, y: 0, x: 0 };
+      } else if (key === "cac000") {
+        return { image: images.portal, x: 0, y: 0 };
+      } else if (key === "cc3300") {
+        return { image: images.portalRed, x: 0, y: 0 };
+      } else if (key === "0066cc") {
+        return { image: images.portalBlue, x: 0, y: 0 };
+      } else if (floorTiles.hasOwnProperty(key)) {
+        return { image: images.tile, x: floorTiles[key].x, y: floorTiles[key].y };
+      } else {
+        return null;
+      }
+    }
+    
+    function wallSolidsAt(col, row) {
+      if (col < 0 || row < 0 || row >= wallMap.length || col >= wallMap[0].length) return 0;
+      return wallMap[row][col];
+    }
+    
+    function drawWallTile(ctx, col, row) {
+      const solids = wallMap[row][col];
+      if (!solids) return;
+      for (let q = 0; q < 4; q++) {
+        const mask = (solids >> (q << 1)) & 3;
+        if (mask === 0) continue;
+        const cornerX = col + ((q & 2) === 0 ? 1 : 0);
+        const cornerY = row + (((q + 1) & 2) === 0 ? 0 : 1);
+        let aroundCorner =
+          (wallSolidsAt(cornerX, cornerY) & 0xc0) |
+          (wallSolidsAt(cornerX - 1, cornerY) & 0x03) |
+          (wallSolidsAt(cornerX - 1, cornerY - 1) & 0x0c) |
+          (wallSolidsAt(cornerX, cornerY - 1) & 0x30);
+        aroundCorner |= (aroundCorner << 8);
+        const startDirection = q * 2 + 1;
+        let cwSteps = 0;
+        while (cwSteps < 8 && (aroundCorner & (1 << (startDirection + cwSteps)))) { cwSteps++; }
+        let ccwSteps = 0;
+        while (ccwSteps < 8 && (aroundCorner & (1 << (startDirection + 7 - ccwSteps)))) { ccwSteps++; }
+        const hasChip = (mask === 3 && (((solids | (solids << 8)) >> ((q + 2) << 1)) & 3) === 0);
+        let solidStart, solidEnd;
+        if (cwSteps === 8) {
+          solidStart = solidEnd = 0;
+        } else {
+          solidEnd = (startDirection + cwSteps + 4) % 8;
+          solidStart = (startDirection - ccwSteps + 12) % 8;
+        }
+        const key = `${q}${solidStart}${solidEnd}${hasChip ? "d" : ""}`;
+        const coords = quadrantCoords[key] || [5.5, 5.5];
+        let destX = col * configMap.tileSize;
+        let destY = row * configMap.tileSize;
+        if (q === 0) destX += configMap.quadSize;
+        else if (q === 1) { destX += configMap.quadSize; destY += configMap.quadSize; }
+        else if (q === 2) destY += configMap.quadSize;
+        const srcX = coords[0] * 40;
+        const srcY = coords[1] * 40;
+        ctx.drawImage(images.tile, srcX, srcY, configMap.quadSize, configMap.quadSize,
+                      destX, destY, configMap.quadSize, configMap.quadSize);
+      }
+    }
+    
+    // Fetch PNG and JSON map data.
+    function fetchMapData(mapCode) {
+      const pngURL = `https://fortunatemaps.herokuapp.com/png/${mapCode}.png`;
+      const jsonURL = `https://fortunatemaps.herokuapp.com/json/${mapCode}.json`;
+      console.log("[FM] Fetching map data for code:", mapCode);
+      return Promise.all([
+        fetch(pngURL)
+          .then(res => res.blob())
+          .then(blob => {
+            console.log("[FM] PNG fetched successfully");
+            return URL.createObjectURL(blob);
+          }),
+        fetch(jsonURL)
+          .then(res => res.json())
+          .then(json => {
+            console.log("[FM] JSON fetched successfully:", json);
+            return json;
+          })
+      ]);
+    }
+    
+    // Process the map: load texture images, build wallMap, render full‑size image.
+    function processMap() {
+      if (!originalPNGImage) return;
+      console.log("[FM] Starting map processing...");
+      Promise.all([
+        loadImage(currentTexturePack.tiles),
+        loadImage(currentTexturePack.speedpad),
+        loadImage(currentTexturePack.speedpadRed),
+        loadImage(currentTexturePack.speedpadBlue),
+        loadImage(currentTexturePack.portal),
+        loadImage(currentTexturePack.portalRed),
+        loadImage(currentTexturePack.portalBlue)
+      ]).then(([tileImg, speedpadImg, speedpadRedImg, speedpadBlueImg, portalImg, portalRedImg, portalBlueImg]) => {
+        images.tile = tileImg;
+        images.speedpad = speedpadImg;
+        images.speedpadRed = speedpadRedImg;
+        images.speedpadBlue = speedpadBlueImg;
+        images.portal = portalImg;
+        images.portalRed = portalRedImg;
+        images.portalBlue = portalBlueImg;
+    
+        // Create an offscreen canvas to read the PNG.
+        const offCanvas = document.createElement('canvas');
+        offCanvas.width = originalPNGImage.width;
+        offCanvas.height = originalPNGImage.height;
+        const offCtx = offCanvas.getContext('2d');
+        offCtx.drawImage(originalPNGImage, 0, 0);
+        const imageData = offCtx.getImageData(0, 0, offCanvas.width, offCanvas.height);
+        const data = imageData.data;
+    
+        wallMap = [];
+        for (let y = 0; y < offCanvas.height; y++) {
+          wallMap[y] = [];
+          for (let x = 0; x < offCanvas.width; x++) {
+            const idx = (y * offCanvas.width + x) * 4;
+            const r = data[idx], g = data[idx + 1], b = data[idx + 2], a = data[idx + 3];
+            const hex = rgbToHex(r, g, b).toLowerCase();
+            wallMap[y][x] = (a === 0) ? 0 : (wallTypes.hasOwnProperty(hex) ? wallTypes[hex].wallSolids : 0);
+          }
+        }
+    
+        // Create a final canvas (full-size image) that we then store as an Image.
+        const finalCanvas = document.createElement('canvas');
+        finalCanvas.width = offCanvas.width * configMap.tileSize;
+        finalCanvas.height = offCanvas.height * configMap.tileSize;
+        const finalCtx = finalCanvas.getContext('2d');
+        finalCtx.imageSmoothingEnabled = false;
+    
+        // Draw default floor tile.
+        const defaultFloorTile = getFloorTile("d4d4d4");
+        if (defaultFloorTile) {
+          const sx = defaultFloorTile.x * configMap.tileSize;
+          const sy = defaultFloorTile.y * configMap.tileSize;
+          for (let y = 0; y < offCanvas.height; y++) {
+            for (let x = 0; x < offCanvas.width; x++) {
+              finalCtx.drawImage(defaultFloorTile.image, sx, sy, configMap.tileSize, configMap.tileSize,
+                                 x * configMap.tileSize, y * configMap.tileSize, configMap.tileSize, configMap.tileSize);
+            }
+          }
+        }
+    
+        // Draw floor/feature tiles.
+        for (let y = 0; y < offCanvas.height; y++) {
+          for (let x = 0; x < offCanvas.width; x++) {
+            const idx = (y * offCanvas.width + x) * 4;
+            const r = data[idx], g = data[idx + 1], b = data[idx + 2], a = data[idx + 3];
+            if (a === 0) continue;
+            const hex = rgbToHex(r, g, b).toLowerCase();
+            if (wallTypes.hasOwnProperty(hex)) continue;
+            let tileSource = null;
+            if (hex === "007500") {
+              const fieldKey = `${x},${y}`;
+              let state = "empty";
+              if (mapJSONData && mapJSONData.fields && mapJSONData.fields[fieldKey]) {
+                let ds = mapJSONData.fields[fieldKey].defaultState;
+                state = (ds === "on") ? "green" : ds;
+              }
+              const tileKey = "007500_" + state;
+              tileSource = getFloorTile(tileKey);
+            } else {
+              tileSource = getFloorTile(hex);
+            }
+            if (tileSource) {
+              const sx = tileSource.x * configMap.tileSize;
+              const sy = tileSource.y * configMap.tileSize;
+              finalCtx.drawImage(tileSource.image, sx, sy, configMap.tileSize, configMap.tileSize,
+                                 x * configMap.tileSize, y * configMap.tileSize, configMap.tileSize, configMap.tileSize);
+            } else {
+              finalCtx.fillStyle = "#000000";
+              finalCtx.fillRect(x * configMap.tileSize, y * configMap.tileSize, configMap.tileSize, configMap.tileSize);
+            }
+          }
+        }
+    
+        // Overlay wall tiles.
+        for (let y = 0; y < wallMap.length; y++) {
+          for (let x = 0; x < wallMap[0].length; x++) {
+            if (wallMap[y][x] !== 0) {
+              drawWallTile(finalCtx, x, y);
+            }
+          }
+        }
+    
+        // Marsball rendering.
+        if (mapJSONData && mapJSONData.marsballs) {
+          mapJSONData.marsballs.forEach(mars => {
+            const destX = mars.x * configMap.tileSize - configMap.tileSize/2;
+            const destY = mars.y * configMap.tileSize - configMap.tileSize/2;
+            finalCtx.drawImage(
+              images.tile,
+              12 * configMap.tileSize, 9 * configMap.tileSize, 2 * configMap.tileSize, 2 * configMap.tileSize,
+              destX, destY, 2 * configMap.tileSize, 2 * configMap.tileSize
+            );
+          });
+        }
+    
+        // Save the rendered final map as an Image to be used as background.
+        finalMapImage = new Image();
+        finalMapImage.src = finalCanvas.toDataURL();
+        finalMapImage.onload = function() {
+          // Resize the main drawing canvas to match the full-size map.
+          canvas.width = finalMapImage.width;
+          canvas.height = finalMapImage.height;
+          drawCanvas();
+          console.log("[FM] Final map rendered and drawn as background.");
+        };
+      }).catch(err => console.error("[FM] Error loading texture images", err));
+    }
+    
+    // Load map data using the entered map code.
+    function loadMapForTextures() {
+      var mapCode = document.getElementById('mapCode').value;
+      if (!mapCode) {
+        alert("Please enter a map code.");
+        return;
+      }
+      fetchMapData(mapCode)
+        .then(([pngObjectUrl, jsonData]) => {
+          mapJSONData = jsonData;
+          return loadImage(pngObjectUrl);
+        })
+        .then(img => {
+          originalPNGImage = img;
+          processMap();
+        })
+        .catch(err => console.error("[FM] Error fetching or processing map data:", err));
+    }
+    
+    // Override the original loadMap to use our new loader.
+    function loadMap() {
+      // Also call any other drawing-related functions if needed.
+      loadMapForTextures();
+    }
+    
+    // =====================================================
+    // TEXTURE PACK DROPDOWN UI
+    // =====================================================
+    function addTextureDropdown() {
+      const container = document.getElementById('textureDropdown');
+      if (!container) {
+        console.error("Texture dropdown container not found");
+        return;
+      }
+      const textureContainerHTML = `
+        <div class="dropdown" id="fm-texture-dropdown">
+          <button class="dropdown-toggle" type="button" id="fm-dropdown-button">
+            ${currentTexturePack.name}
+          </button>
+          <div class="dropdown-menu" aria-labelledby="fm-dropdown-button">
+            <div class="px-2">
+              <input type="text" id="fm-dropdown-search" class="form-control form-control-sm" placeholder="Search Texture Packs...">
+            </div>
+            <div id="fm-dropdown-items">
+              ${textures.texturePacks.map(tp => `<a class="dropdown-item" href="#" data-value="${tp.url}">${tp.name}</a>`).join('')}
+            </div>
+          </div>
+        </div>
+      `;
+      container.innerHTML = textureContainerHTML;
+      const searchInput = document.getElementById('fm-dropdown-search');
+      searchInput.addEventListener('input', function() {
+        const query = this.value.toLowerCase();
+        const items = document.querySelectorAll('#fm-dropdown-items .dropdown-item');
+        items.forEach(item => {
+          const text = item.textContent.toLowerCase();
+          item.style.display = text.indexOf(query) > -1 ? "" : "none";
+        });
+      });
+      const items = document.querySelectorAll('#fm-dropdown-items .dropdown-item');
+      items.forEach(item => {
+        item.addEventListener('click', function(e) {
+          e.preventDefault();
+          const selectedUrl = this.getAttribute('data-value');
+          const selectedTexture = textures.texturePacks.find(tp => tp.url === selectedUrl);
+          if (selectedTexture && selectedTexture.url !== currentTexturePack.url) {
+            currentTexturePack = selectedTexture;
+            localStorage.setItem('fm_selected_texturePack', selectedTexture.url);
+            console.log("Texture pack changed to:", selectedTexture.name);
+            processMap();
+            document.getElementById('fm-dropdown-button').textContent = selectedTexture.name;
+          }
+        });
+      });
+    }
+    
+    document.addEventListener("DOMContentLoaded", function() {
+      addTextureDropdown();
+    });
+    
+    // =====================================================
+    // End Integration
+    // =====================================================
+  </script>
 </body>
 </html>
