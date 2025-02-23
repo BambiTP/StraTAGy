@@ -221,6 +221,7 @@
   <footer class="toolbar-bottom">
     <button id="red" onclick="addCircle('red')">Red Ball</button>
     <button id="blue" onclick="addCircle('blue')">Blue Ball</button>
+    <input type="number" min="1" max="999" value="20" id="radiusInput" oninput="updateRadiusValue()">
     <button id="clearButton" onclick="clearPaths()">Clear Lines</button>
     <button id="clearButton" onclick="clearCanvas()">Clear All</button>
     <button id="undoButton" onclick="undo()">Undo</button>
