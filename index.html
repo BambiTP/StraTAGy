@@ -1026,7 +1026,7 @@ canvas.addEventListener("mouseup", function(event) {
     // Fetch Map Data using CORS-anywhere proxy.
     // =====================================================
     function fetchMapData(mapCode) {
-      const corsProxy = "https://crossorigin.me/";
+      const corsProxy = "https://api.cors.lol/?url=";
       const pngURL = corsProxy + "https://fortunatemaps.herokuapp.com/png/" + mapCode + ".png";
       const jsonURL = corsProxy + "https://fortunatemaps.herokuapp.com/json/" + mapCode + ".json";
       console.log("[FM] Fetching map data for code:", mapCode);
