@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Fortunate Maps with Drawing & Texture Packs</title>
+  <title>Fortunate Maps with Drawing & Texture Packs (CORS-anywhere)</title>
   <style>
     /* Original CSS for drawing and UI */
     .toolbar-bottom {
@@ -143,7 +143,7 @@
       border-radius: 4px;
     }
     .container { display: flex; }
-    /* Position the texture pack dropdown in the top-right */
+    /* Texture pack dropdown – positioned in the top-right */
     #textureDropdown {
       position: fixed;
       top: 10px;
@@ -188,7 +188,7 @@
   <!-- Texture pack dropdown container -->
   <div id="textureDropdown"></div>
   
-  <!-- Main container: the canvas is used for both the full-size rendered map (as background) and drawing -->
+  <!-- Main container: canvas for full-size rendered map as background and drawing layer -->
   <div class="container">
     <canvas id="canvas" width="1000" height="760"></canvas>
     <canvas id="invisibleCanvas"></canvas>
@@ -262,7 +262,7 @@
   
   <script>
     // =====================================================
-    // DRAWING FUNCTIONALITY (original code, modified)
+    // DRAWING FUNCTIONALITY (original code)
     // =====================================================
     var canvas = document.getElementById('canvas');
     var ctx = canvas.getContext('2d');
@@ -280,20 +280,13 @@
     var currentLine = null;
     var gridSize = 40;
     
-    // NEW global: finalMapImage stores the full‑size rendered map (as background)
+    // Global variable: finalMapImage stores the full‑size rendered map (background)
     var finalMapImage = null;
     
-    // Instead of the old handleJPEGImage, we will load the map using PNG/JSON.
-    // (The original call using URL params is now commented out.)
-    // const urlParams = new URLSearchParams(window.location.search);
-    // const mapCodeParam = urlParams.get('mapCode');
-    // if (mapCodeParam) { loadMap(); }
-    
-    // When clearing the canvas, we now re‑draw the background map if available.
+    // When clearing the canvas, re‑draw the background map (if available)
     function drawCanvas() {
-      // Clear and then draw the final map background if it exists.
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      if(finalMapImage){
+      if (finalMapImage) {
         ctx.drawImage(finalMapImage, 0, 0, canvas.width, canvas.height);
       }
       redrawToggledElements();
@@ -319,17 +312,15 @@
     }
     
     function drawCircles() {
-      for (var i = 0; i < circles.length; i++) {
-        drawCircle(circles[i]);
-      }
+      circles.forEach(function(circle) { drawCircle(circle); });
     }
     
     function drawPaths() {
-      for (var i = 0; i < paths.length; i++) {
-        ctx.strokeStyle = paths[i].color;
-        ctx.lineWidth = paths[i].size;
-        ctx.stroke(paths[i].path);
-      }
+      paths.forEach(function(p) {
+        ctx.strokeStyle = p.color;
+        ctx.lineWidth = p.size;
+        ctx.stroke(p.path);
+      });
     }
     
     function redrawToggledElements() {
@@ -339,34 +330,19 @@
         var imageUrl = getImageUrlByColor(element.color);
         if (imageUrl) {
           var image = new Image();
-          image.onload = function() {
-            ctx.drawImage(image, element.x * 40, element.y * 40, 40, 40);
-          };
+          image.onload = function() { ctx.drawImage(image, element.x * 40, element.y * 40, 40, 40); };
           image.src = imageUrl;
         }
       });
     }
     
-    function clearPaths() {
-      paths = [];
-      drawCanvas();
-    }
-    
-    function clearCanvas() {
-      circles = [];
-      paths = [];
-      drawCanvas();
-    }
-    
-    function updatePathSize() {
-      pathSize = Number(document.getElementById("sizeInput").value);
-    }
-    
+    function clearPaths() { paths = []; drawCanvas(); }
+    function clearCanvas() { circles = []; paths = []; drawCanvas(); }
+    function updatePathSize() { pathSize = Number(document.getElementById("sizeInput").value); }
     function updatePathColor(color) {
       pathColor = color;
       document.documentElement.style.setProperty('--path-color', color);
     }
-    
     function colorAdd(colorInput) {
       var colorInputElem = document.getElementById(colorInput);
       var color = colorInputElem.value;
@@ -381,14 +357,11 @@
       colorButton.style.cursor = "pointer";
       colorButton.style.marginRight = "10px";
       colorButton.style.backgroundColor = color;
-      colorButton.onclick = function() {
-        updatePathColor(color);
-      };
+      colorButton.onclick = function() { updatePathColor(color); };
       var buttonText = document.createTextNode(colorName.value);
       colorButton.appendChild(buttonText);
       colorsDiv.appendChild(colorButton);
     }
-    
     function getImageUrlByColor(color) {
       var imageUrls = {
         red: 'red.png',
@@ -417,10 +390,7 @@
     }
     
     function undo() {
-      if (paths.length > 0) {
-        paths.pop();
-        drawCanvas();
-      }
+      if (paths.length > 0) { paths.pop(); drawCanvas(); }
     }
     
     canvas.addEventListener("contextmenu", function(event) {
@@ -452,11 +422,7 @@
     }
     
     function getStart(event) {
-      var path = {
-        path: new Path2D(),
-        color: pathColor,
-        size: pathSize
-      };
+      var path = { path: new Path2D(), color: pathColor, size: pathSize };
       path.path.moveTo(event.clientX - canvas.getBoundingClientRect().left,
                        event.clientY - canvas.getBoundingClientRect().top);
       paths.push(path);
@@ -471,10 +437,7 @@
       ctx.stroke(lastPath.path);
     }
     
-    var isDrawingLine = false;
-    var lineStartX = 0;
-    var lineStartY = 0;
-    
+    var isDrawingLine = false, lineStartX = 0, lineStartY = 0;
     function startDrawingLine(event) {
       if (event.button === 0 && document.getElementById("lineCheckbox").checked) {
         isDrawingLine = true;
@@ -503,11 +466,7 @@
         isDrawingLine = false;
         var lineEndX = event.clientX - canvas.getBoundingClientRect().left;
         var lineEndY = event.clientY - canvas.getBoundingClientRect().top;
-        var path = {
-          path: new Path2D(),
-          color: pathColor,
-          size: pathSize
-        };
+        var path = { path: new Path2D(), color: pathColor, size: pathSize };
         path.path.moveTo(lineStartX, lineStartY);
         path.path.lineTo(lineEndX, lineEndY);
         paths.push(path);
@@ -518,64 +477,41 @@
     canvas.addEventListener("mousedown", function(event) {
       if (event.button === 0) {
         selectCircle(event);
-        if (document.getElementById("drawCheckbox").checked)
-          isDrawing = true;
+        if (document.getElementById("drawCheckbox").checked) isDrawing = true;
         getStart(event);
       }
     });
-    
     canvas.addEventListener("mousemove", function(event) {
       moveCircle(event);
-      if (isDrawing)
-        drawLine(event);
+      if (isDrawing) drawLine(event);
     });
-    
-    canvas.addEventListener("mouseup", function(event) {
-      selectedCircle = null;
-      isDrawing = false;
-    });
-    
+    canvas.addEventListener("mouseup", function(event) { selectedCircle = null; isDrawing = false; });
     canvas.addEventListener("mousedown", startDrawingLine);
     canvas.addEventListener("mousemove", drawLinePreview);
     canvas.addEventListener("mouseup", finishDrawingLine);
     
     document.addEventListener('keydown', function(event) {
-      if (event.ctrlKey && event.key === 'z') {
-        undo();
-      }
+      if (event.ctrlKey && event.key === 'z') { undo(); }
     });
-    
     document.addEventListener('keydown', function(event) {
       const key = event.key.toLowerCase();
       if (key === 'n') {
         document.getElementById('noneCheckbox').checked = true;
-        document.querySelectorAll('.toggle-btn').forEach(function(label) {
-          label.classList.remove('active');
-        });
+        document.querySelectorAll('.toggle-btn').forEach(label => label.classList.remove('active'));
         document.querySelector('label[for="noneCheckbox"]').classList.add('active');
       } else if (key === 'd') {
         document.getElementById('drawCheckbox').checked = true;
-        document.querySelectorAll('.toggle-btn').forEach(function(label) {
-          label.classList.remove('active');
-        });
+        document.querySelectorAll('.toggle-btn').forEach(label => label.classList.remove('active'));
         document.querySelector('label[for="drawCheckbox"]').classList.add('active');
       } else if (key === 'l') {
         document.getElementById('lineCheckbox').checked = true;
-        document.querySelectorAll('.toggle-btn').forEach(function(label) {
-          label.classList.remove('active');
-        });
+        document.querySelectorAll('.toggle-btn').forEach(label => label.classList.remove('active'));
         document.querySelector('label[for="lineCheckbox"]').classList.add('active');
       }
     });
     
-    function openModal() {
-      document.getElementById('myModal').style.display = 'block';
-    }
-    
-    function closeModal() {
-      document.getElementById('myModal').style.display = 'none';
-    }
-    
+    function openModal() { document.getElementById('myModal').style.display = 'block'; }
+    function closeModal() { document.getElementById('myModal').style.display = 'none'; }
     document.getElementById('open-form-button').addEventListener('click', function() {
       var formUrl = "https://docs.google.com/forms/d/e/1FAIpQLSdm2Icwdfmm_JpkOpDuu4hxWPyiYnZDoCEZq22FhXl0gKtY4A/viewform?embedded=true";
       window.open(formUrl, "_blank", "width=600,height=400");
@@ -589,10 +525,7 @@
     const baseUrl = "https://static.koalabeast.com";
     
     // Configuration for map rendering.
-    const configMap = {
-      tileSize: 40,
-      quadSize: 20
-    };
+    const configMap = { tileSize: 40, quadSize: 20 };
     
     // Floor tiles mapping.
     const floorTiles = {
@@ -901,13 +834,9 @@
       const start = Date.now();
       (function check() {
         const el = document.querySelector(selector);
-        if (el) {
-          callback(el);
-        } else if (Date.now() - start > timeout) {
-          console.warn("Timeout waiting for element:", selector);
-        } else {
-          setTimeout(check, 200);
-        }
+        if (el) { callback(el); }
+        else if (Date.now() - start > timeout) { console.warn("Timeout waiting for element:", selector); }
+        else { setTimeout(check, 200); }
       })();
     }
     
@@ -917,9 +846,7 @@
     
     // loadImage prepends baseUrl if needed.
     function loadImage(url) {
-      if (url.startsWith("/")) {
-        url = baseUrl + url;
-      }
+      if (url.startsWith("/")) { url = baseUrl + url; }
       return new Promise((resolve, reject) => {
         const img = new Image();
         img.crossOrigin = "anonymous";
@@ -1001,10 +928,13 @@
       }
     }
     
-    // Fetch PNG and JSON map data.
+    // =====================================================
+    // Fetch Map Data using CORS-anywhere proxy.
+    // =====================================================
     function fetchMapData(mapCode) {
-      const pngURL = `https://fortunatemaps.herokuapp.com/png/${mapCode}.png`;
-      const jsonURL = `https://fortunatemaps.herokuapp.com/json/${mapCode}.json`;
+      const corsProxy = "https://cors-anywhere.herokuapp.com/";
+      const pngURL = corsProxy + "https://fortunatemaps.herokuapp.com/png/" + mapCode + ".png";
+      const jsonURL = corsProxy + "https://fortunatemaps.herokuapp.com/json/" + mapCode + ".json";
       console.log("[FM] Fetching map data for code:", mapCode);
       return Promise.all([
         fetch(pngURL)
@@ -1063,7 +993,7 @@
           }
         }
     
-        // Create a final canvas (full-size image) that we then store as an Image.
+        // Create final canvas (full-size image).
         const finalCanvas = document.createElement('canvas');
         finalCanvas.width = offCanvas.width * configMap.tileSize;
         finalCanvas.height = offCanvas.height * configMap.tileSize;
@@ -1138,11 +1068,10 @@
           });
         }
     
-        // Save the rendered final map as an Image to be used as background.
+        // Save final rendered map as an Image.
         finalMapImage = new Image();
         finalMapImage.src = finalCanvas.toDataURL();
         finalMapImage.onload = function() {
-          // Resize the main drawing canvas to match the full-size map.
           canvas.width = finalMapImage.width;
           canvas.height = finalMapImage.height;
           drawCanvas();
@@ -1154,10 +1083,7 @@
     // Load map data using the entered map code.
     function loadMapForTextures() {
       var mapCode = document.getElementById('mapCode').value;
-      if (!mapCode) {
-        alert("Please enter a map code.");
-        return;
-      }
+      if (!mapCode) { alert("Please enter a map code."); return; }
       fetchMapData(mapCode)
         .then(([pngObjectUrl, jsonData]) => {
           mapJSONData = jsonData;
@@ -1170,21 +1096,15 @@
         .catch(err => console.error("[FM] Error fetching or processing map data:", err));
     }
     
-    // Override the original loadMap to use our new loader.
-    function loadMap() {
-      // Also call any other drawing-related functions if needed.
-      loadMapForTextures();
-    }
+    // Override original loadMap to use our new loader.
+    function loadMap() { loadMapForTextures(); }
     
     // =====================================================
     // TEXTURE PACK DROPDOWN UI
     // =====================================================
     function addTextureDropdown() {
       const container = document.getElementById('textureDropdown');
-      if (!container) {
-        console.error("Texture dropdown container not found");
-        return;
-      }
+      if (!container) { console.error("Texture dropdown container not found"); return; }
       const textureContainerHTML = `
         <div class="dropdown" id="fm-texture-dropdown">
           <button class="dropdown-toggle" type="button" id="fm-dropdown-button">
