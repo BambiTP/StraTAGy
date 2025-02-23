@@ -1069,11 +1069,11 @@ function fetchMapData(mapCode) {
 }
 
     
-    // Process the map: load texture images, build wallMap, render full‑size image.
     function processMap() {
-      if (!originalPNGImage) return;
-      console.log("[FM] Starting map processing...");
-      Promise.all([
+    if (!originalPNGImage) return;
+    console.log("[FM] Starting map processing...");
+
+    Promise.all([
         loadImage(currentTexturePack.tiles),
         loadImage(currentTexturePack.speedpad),
         loadImage(currentTexturePack.speedpadRed),
@@ -1081,7 +1081,7 @@ function fetchMapData(mapCode) {
         loadImage(currentTexturePack.portal),
         loadImage(currentTexturePack.portalRed),
         loadImage(currentTexturePack.portalBlue)
-      ]).then(([tileImg, speedpadImg, speedpadRedImg, speedpadBlueImg, portalImg, portalRedImg, portalBlueImg]) => {
+    ]).then(([tileImg, speedpadImg, speedpadRedImg, speedpadBlueImg, portalImg, portalRedImg, portalBlueImg]) => {
         images.tile = tileImg;
         images.speedpad = speedpadImg;
         images.speedpadRed = speedpadRedImg;
@@ -1089,7 +1089,7 @@ function fetchMapData(mapCode) {
         images.portal = portalImg;
         images.portalRed = portalRedImg;
         images.portalBlue = portalBlueImg;
-    
+
         // Create an offscreen canvas to read the PNG.
         const offCanvas = document.createElement('canvas');
         offCanvas.width = originalPNGImage.width;
@@ -1098,127 +1098,108 @@ function fetchMapData(mapCode) {
         offCtx.drawImage(originalPNGImage, 0, 0);
         const imageData = offCtx.getImageData(0, 0, offCanvas.width, offCanvas.height);
         const data = imageData.data;
-    
+
         wallMap = [];
         for (let y = 0; y < offCanvas.height; y++) {
-          wallMap[y] = [];
-          for (let x = 0; x < offCanvas.width; x++) {
-            const idx = (y * offCanvas.width + x) * 4;
-            const r = data[idx], g = data[idx + 1], b = data[idx + 2], a = data[idx + 3];
-            const hex = rgbToHex(r, g, b).toLowerCase();
-            wallMap[y][x] = (a === 0) ? 0 : (wallTypes.hasOwnProperty(hex) ? wallTypes[hex].wallSolids : 0);
-          }
+            wallMap[y] = [];
+            for (let x = 0; x < offCanvas.width; x++) {
+                const idx = (y * offCanvas.width + x) * 4;
+                const [r, g, b, a] = [data[idx], data[idx + 1], data[idx + 2], data[idx + 3]];
+                const hex = rgbToHex(r, g, b).toLowerCase();
+                wallMap[y][x] = (a === 0) ? 0 : (wallTypes[hex]?.wallSolids || 0);
+            }
         }
-    
+
         // Create final canvas (full-size image).
         const finalCanvas = document.createElement('canvas');
         finalCanvas.width = offCanvas.width * configMap.tileSize;
         finalCanvas.height = offCanvas.height * configMap.tileSize;
         const finalCtx = finalCanvas.getContext('2d');
         finalCtx.imageSmoothingEnabled = false;
-    
+
         // Draw default floor tile.
         const defaultFloorTile = getFloorTile("d4d4d4");
         if (defaultFloorTile) {
-          const sx = defaultFloorTile.x * configMap.tileSize;
-          const sy = defaultFloorTile.y * configMap.tileSize;
-          for (let y = 0; y < offCanvas.height; y++) {
-            for (let x = 0; x < offCanvas.width; x++) {
-              finalCtx.drawImage(defaultFloorTile.image, sx, sy, configMap.tileSize, configMap.tileSize, x * configMap.tileSize, y * configMap.tileSize, configMap.tileSize, configMap.tileSize);
+            const { x: sx, y: sy, image } = defaultFloorTile;
+            for (let y = 0; y < offCanvas.height; y++) {
+                for (let x = 0; x < offCanvas.width; x++) {
+                    finalCtx.drawImage(image, sx * configMap.tileSize, sy * configMap.tileSize, configMap.tileSize, configMap.tileSize,
+                                       x * configMap.tileSize, y * configMap.tileSize, configMap.tileSize, configMap.tileSize);
+                }
             }
-          }
         }
-    
+
         // Draw floor/feature tiles.
         for (let y = 0; y < offCanvas.height; y++) {
-          for (let x = 0; x < offCanvas.width; x++) {
-            const idx = (y * offCanvas.width + x) * 4;
-            const r = data[idx], g = data[idx + 1], b = data[idx + 2], a = data[idx + 3];
-            if (a === 0) continue;
-            const hex = rgbToHex(r, g, b).toLowerCase();
-            if (wallTypes.hasOwnProperty(hex)) continue;
-            let tileSource = null;
-            if (hex === "007500") {
-             const fieldKey = `${x},${y}`;
-let state = "empty"; // Default state remains "empty"
-if (mapJSONData && mapJSONData.fields && mapJSONData.fields[fieldKey]) {
-    let ds = mapJSONData.fields[fieldKey].defaultState;
-    if (ds === "on") {
-        state = "green";
-    } else if (ds === "off") {
-        state = "empty"; // Change "off" to "empty"
-    } else {
-        state = ds;
-    }
-}
+            for (let x = 0; x < offCanvas.width; x++) {
+                const idx = (y * offCanvas.width + x) * 4;
+                const [r, g, b, a] = [data[idx], data[idx + 1], data[idx + 2], data[idx + 3]];
+                if (a === 0) continue;
+                
+                const hex = rgbToHex(r, g, b).toLowerCase();
+                if (wallTypes[hex]) continue;
 
-              const tileKey = "007500_" + state;
-              tileSource = getFloorTile(tileKey);
-            } else {
-              tileSource = getFloorTile(hex);
+                let tileSource = null;
+
+                if (hex === "007500") {
+                    const fieldKey = `${x},${y}`;
+                    let state = mapJSONData?.fields?.[fieldKey]?.defaultState || "empty";
+
+                    if (state === "on") state = "green";
+                    else if (state === "off") state = "empty"; // Ensure "off" maps to "empty"
+
+                    tileSource = getFloorTile(`007500_${state}`);
+                } else {
+                    tileSource = getFloorTile(hex);
+                }
+
+                if (!tileSource) {
+                    // Instead of filling black, use default floor tile if available
+                    tileSource = defaultFloorTile;
+                }
+
+                if (tileSource) {
+                    const { x: sx, y: sy, image } = tileSource;
+                    finalCtx.drawImage(image, sx * configMap.tileSize, sy * configMap.tileSize, configMap.tileSize, configMap.tileSize,
+                                       x * configMap.tileSize, y * configMap.tileSize, configMap.tileSize, configMap.tileSize);
+                }
             }
-            if (tileSource) {
-              const sx = tileSource.x * configMap.tileSize;
-              const sy = tileSource.y * configMap.tileSize;
-              finalCtx.drawImage(tileSource.image, sx, sy, configMap.tileSize, configMap.tileSize,
-                                 x * configMap.tileSize, y * configMap.tileSize, configMap.tileSize, configMap.tileSize);
-            } else {
-              finalCtx.fillStyle = "#000000";
-              finalCtx.fillRect(x * configMap.tileSize, y * configMap.tileSize, configMap.tileSize, configMap.tileSize);
-            }
-          }
         }
-    
+
         // Overlay wall tiles.
         for (let y = 0; y < wallMap.length; y++) {
-          for (let x = 0; x < wallMap[0].length; x++) {
-            if (wallMap[y][x] !== 0) {
-              drawWallTile(finalCtx, x, y);
+            for (let x = 0; x < wallMap[0].length; x++) {
+                if (wallMap[y][x] !== 0) {
+                    drawWallTile(finalCtx, x, y);
+                }
             }
-          }
         }
-    
+
         // Marsball rendering.
-        if (mapJSONData && mapJSONData.marsballs) {
-          mapJSONData.marsballs.forEach(mars => {
-            const destX = mars.x * configMap.tileSize - configMap.tileSize/2;
-            const destY = mars.y * configMap.tileSize - configMap.tileSize/2;
-            finalCtx.drawImage(
-              images.tile,
-              12 * configMap.tileSize, 9 * configMap.tileSize, 2 * configMap.tileSize, 2 * configMap.tileSize,
-              destX, destY, 2 * configMap.tileSize, 2 * configMap.tileSize
-            );
-          });
+        if (mapJSONData?.marsballs) {
+            mapJSONData.marsballs.forEach(mars => {
+                const destX = mars.x * configMap.tileSize - configMap.tileSize / 2;
+                const destY = mars.y * configMap.tileSize - configMap.tileSize / 2;
+                finalCtx.drawImage(
+                    images.tile,
+                    12 * configMap.tileSize, 9 * configMap.tileSize, 2 * configMap.tileSize, 2 * configMap.tileSize,
+                    destX, destY, 2 * configMap.tileSize, 2 * configMap.tileSize
+                );
+            });
         }
-    
+
         // Save final rendered map as an Image.
         finalMapImage = new Image();
         finalMapImage.src = finalCanvas.toDataURL();
-        finalMapImage.onload = function() {
-          canvas.width = finalMapImage.width;
-          canvas.height = finalMapImage.height;
-          drawCanvas();
-          console.log("[FM] Final map rendered and drawn as background.");
+        finalMapImage.onload = function () {
+            canvas.width = finalMapImage.width;
+            canvas.height = finalMapImage.height;
+            drawCanvas();
+            console.log("[FM] Final map rendered and drawn as background.");
         };
-      }).catch(err => console.error("[FM] Error loading texture images", err));
-    }
-    
-    // Load map data using the entered map code.
-    function loadMapForTextures() {
-      var mapCode = document.getElementById('mapCode').value;
-      if (!mapCode) { alert("Please enter a map code."); return; }
-      fetchMapData(mapCode)
-        .then(([pngObjectUrl, jsonData]) => {
-          mapJSONData = jsonData;
-          return loadImage(pngObjectUrl);
-        })
-        .then(img => {
-          originalPNGImage = img;
-          processMap();
-        })
-        .catch(err => console.error("[FM] Error fetching or processing map data:", err));
-    }
-    
+    }).catch(err => console.error("[FM] Error loading texture images", err));
+}
+
     // Override original loadMap to use our new loader.
     function loadMap() { loadMapForTextures(); }
     
