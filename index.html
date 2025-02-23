@@ -1033,26 +1033,41 @@ canvas.addEventListener("mouseup", function(event) {
     // =====================================================
     // Fetch Map Data using CORS-anywhere proxy.
     // =====================================================
-    function fetchMapData(mapCode) {
-      const corsProxy = "https://api.allorigins.win/raw?url=";
-      const pngURL = corsProxy + "https://fortunatemaps.herokuapp.com/png/" + mapCode + ".png";
-      const jsonURL = corsProxy + "https://fortunatemaps.herokuapp.com/json/" + mapCode + ".json";
-      console.log("[FM] Fetching map data for code:", mapCode);
-      return Promise.all([
-        fetch(pngURL)
-          .then(res => res.blob())
-          .then(blob => {
-            console.log("[FM] PNG fetched successfully");
-            return URL.createObjectURL(blob);
-          }),
-        fetch(jsonURL)
-          .then(res => res.json())
-          .then(json => {
-            console.log("[FM] JSON fetched successfully:", json);
-            return json;
-          })
-      ]);
-    }
+function fetchMapData(mapCode) {
+  const corsProxy = "https://api.allorigins.win/raw?url=";
+  const pngURL = corsProxy + "https://fortunatemaps.herokuapp.com/png/" + mapCode + ".png";
+  const jsonURL = corsProxy + "https://fortunatemaps.herokuapp.com/json/" + mapCode + ".json";
+  
+  console.log("[FM] Fetching map data for code:", mapCode);
+  
+  return Promise.all([
+    fetch(pngURL)
+      .then(res => {
+        if (!res.ok) {
+          throw new Error('Failed to fetch PNG');
+        }
+        return res.blob();
+      })
+      .then(blob => {
+        console.log("[FM] PNG fetched successfully");
+        // Log the blob object to inspect its properties
+        console.log("Blob type:", blob.type);  // Should be something like 'image/png'
+        console.log("Blob size:", blob.size);  // Size in bytes
+        console.log("Blob:", blob);  // This will log the Blob object itself
+
+        // Create an object URL from the blob
+        const url = URL.createObjectURL(blob);
+
+        // Optionally log the URL as well
+        console.log("Blob URL:", url);
+        return url;
+      })
+      .catch(err => {
+        console.error("[FM] Error fetching PNG:", err);
+      })
+  ]);
+}
+
     
     // Process the map: load texture images, build wallMap, render full‑size image.
     function processMap() {
