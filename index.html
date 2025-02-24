@@ -5,15 +5,6 @@
   <title>Fortunate Maps with Drawing & Texture Packs (CORS-anywhere)</title>
   <style>
     /* Original CSS for drawing and UI */
-    .toolbar-bottom {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      width: 100%;
-      background-color: #f2f2f2;
-      padding: 10px;
-      z-index: 9999; /* Ensure toolbar is above other elements */
-    }
     .toolbar-right {
       top: 0;
       right: 0;
@@ -151,6 +142,69 @@
 #fm-dropdown-button {
     color: black;}
 
+   .toolbar-bottom {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background-color: #f2f2f2;
+  padding: 10px;
+  z-index: 9999; /* Ensure toolbar is above other elements */
+  display: flex;
+  align-items: center;
+  justify-content: left;
+}
+
+.checkbox-container {
+  display: inline-flex;
+  flex-direction: column; /* Stack the label on top of the checkbox */
+  align-items: center;
+}
+
+/* Style for the label above the checkbox */
+.checkbox-label {
+  font-weight: bold;
+  font-size: 20px;
+  font: fantasy;
+  transform: translate(-5px, -8px);
+}
+
+/* Remove the default checkbox appearance and set custom dimensions */
+input[type="checkbox"] {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  transform: translate(-5px, -12px);
+  width: 50px;
+  height: 50px;
+  border: 2px solid #ccc;
+  border-radius: 4px;
+  position: relative;
+  cursor: pointer;
+  font-size: 40px;      /* Big icon size */
+  line-height: 50px;    /* Center the icon vertically */
+  text-align: center;   /* Center the icon horizontally */
+  color: white;
+  background-color: red; /* Default red background for unchecked state */
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+/* When unchecked, show a red X */
+input[type="checkbox"]:not(:checked)::after {
+  content: "✕";
+}
+
+/* When checked, change background to green and show a checkmark */
+input[type="checkbox"]:checked {
+  background-color: green;
+  border-color: green;
+}
+
+input[type="checkbox"]:checked::after {
+  content: "✓";
+}
+
+
   </style>
 </head>
 <body>
@@ -218,10 +272,14 @@
     </div>
   </div>
   
-  <footer class="toolbar-bottom">
-    <button id="red" onclick="addCircle('red')">Red Ball</button>
-    <button id="blue" onclick="addCircle('blue')">Blue Ball</button>
-    <button id="clearButton" onclick="clearPaths()">Clear Lines</button>
+ <footer class="toolbar-bottom">
+  <button id="red" onclick="drawRedCircle()">Red Ball</button>
+  <button id="blue" onclick="drawBlueCircle()">Blue Ball</button>
+  <div class="checkbox-container">
+    <label for="flagCheckbox" class="checkbox-label">Flag</label>
+    <input type="checkbox" id="flagCheckbox">
+  </div>
+  <button id="clearButton" onclick="clearPaths()">Clear Lines</button>
     <button id="clearButton" onclick="clearCanvas()">Clear All</button>
     <button id="undoButton" onclick="undo()">Undo</button>
     <div id="colorDisplay"></div>
@@ -229,6 +287,7 @@
       <button id="Info" onclick="openModal()">Info</button>
     </div>
   </footer>
+
   
   <script>
     // =====================================================
@@ -249,6 +308,7 @@
     var selectedCircle = null;
     var currentLine = null;
     var gridSize = 40;
+    let flagEnabled = true;
     
     // Global variable: finalMapImage stores the full‑size rendered map (background)
     var finalMapImage = null;
@@ -263,50 +323,84 @@
       drawCircles();
       drawPaths();
     }
-    
-   function addCircle(color) {
-    let config = configMap;
+    function addCircle(color, withFlag) {
+  let config = configMap;
   // Choose a random position on the canvas.
   var x = Math.floor(Math.random() * canvas.width);
   var y = Math.floor(Math.random() * canvas.height);
-  // Instead of a radius, we only need the position and the color (to pick which tile to draw).
-  var tileObj = { x: x, y: y, color: color };
+  // Attach the flag boolean.
+  var tileObj = { x: x, y: y, color: color, hasFlag: withFlag };
   circles.push(tileObj);
   drawCanvas();
 }
 
 function drawCircle(tileObj) {
-    let config = configMap;
-  // Determine which part of images.tile to draw based on the color.
+  let config = configMap;
+  // Determine which tile to draw for the circle based on its color.
   let tileX, tileY;
   if (tileObj.color === "red") {
-    tileX = 14; // Use the tile at column 14
-    tileY = 0;  // from row 0 for red.
+    tileX = 14; // Column 14 for red.
+    tileY = 0;  // Row 0 for red.
   } else if (tileObj.color === "blue") {
-    tileX = 15; // Use the tile at column 15
-    tileY = 0;  // from row 0 for blue.
+    tileX = 15; // Column 15 for blue.
+    tileY = 0;  // Row 0 for blue.
   } else {
-    // Fallback to a default tile (optional)
+    // Fallback to a default tile.
     tileX = 0;
     tileY = 0;
   }
   
-  // Draw the chosen tile from images.tile onto the canvas.
-  // The source rectangle is calculated based on tileX/tileY and the tile size.
+  // Draw the circle tile.
   ctx.drawImage(
-    images.tile,                         // The tile sheet image.
-    tileX * config.tileSize,             // sx: x coordinate in the source image.
-    tileY * config.tileSize,             // sy: y coordinate in the source image.
-    config.tileSize, config.tileSize,     // sw & sh: width and height of the tile in the source image.
-    tileObj.x, tileObj.y,                // dx & dy: where to place it on the canvas.
-    config.tileSize, config.tileSize      // dw & dh: draw the tile at its natural size.
+    images.tile,                     // Tile sheet image.
+    tileX * config.tileSize,         // Source x.
+    tileY * config.tileSize,         // Source y.
+    config.tileSize, config.tileSize, // Source width & height.
+    tileObj.x, tileObj.y,            // Destination x & y.
+    config.tileSize, config.tileSize  // Destination width & height.
   );
+
+  // If the circle should have a flag, draw it.
+  if (tileObj.hasFlag) {
+    let flagTileX, flagTileY;
+    if (tileObj.color === "red") {
+      flagTileX = 15; // For red, flag is at column 15.
+      flagTileY = 1;  // Row 1.
+    } else if (tileObj.color === "blue") {
+      flagTileX = 14; // For blue, flag is at column 14.
+      flagTileY = 1;  // Row 1.
+    } else {
+      // Fallback flag tile (optional).
+      flagTileX = 0;
+      flagTileY = 1;
+    }
+    // Draw the flag with an offset (x: +19, y: -19) and at 40x40 size.
+    ctx.drawImage(
+      images.tile,
+      flagTileX * config.tileSize, flagTileY * config.tileSize,
+      40, 40,  // Source dimensions for the flag (40x40).
+      tileObj.x + 19, tileObj.y - 19,
+      40, 40   // Destination dimensions.
+    );
+  }
 }
 
-    function drawCircles() {
-      circles.forEach(function(circle) { drawCircle(circle); });
-    }
-    
+function drawCircles() {
+  circles.forEach(function(circle) { drawCircle(circle); });
+}
+
+function drawRedCircle() {
+  // If flagEnabled is true, the circle is created with a flag.
+  addCircle("red", flagEnabled);
+}
+
+// Function to draw a blue circle when the blue button is pressed.
+function drawBlueCircle() {
+  // If flagEnabled is true, the circle is created with a flag.
+  addCircle("blue", flagEnabled);
+}
+
+   
     function drawPaths() {
       paths.forEach(function(p) {
         ctx.strokeStyle = p.color;
@@ -402,28 +496,16 @@ function selectCircle(event) {
     }
   }
 }
-
+ 
 function moveCircle(event) {
   if (selectedCircle) {
     var rect = canvas.getBoundingClientRect();
-    // Update the circle's top-left coordinates so its center follows the mouse.
-    selectedCircle.x = event.clientX - rect.left - 19;
-    selectedCircle.y = event.clientY - rect.top - 19;
-    drawCanvas();
-  }
-}
-
-
-function moveCircle(event) {
-  if (selectedCircle) {
-    var rect = canvas.getBoundingClientRect();
-    // To keep the mouse at the center of the square, subtract 20 (half of 40) from the position
+    // Keep the mouse at the center of the square by subtracting 20.
     selectedCircle.x = event.clientX - rect.left - 20;
     selectedCircle.y = event.clientY - rect.top - 20;
     drawCanvas();
   }
 }
-
 canvas.addEventListener("contextmenu", function(event) {
   event.preventDefault();
   removeCircle(event);
@@ -1299,6 +1381,14 @@ document.addEventListener("DOMContentLoaded", function() {
   addTextureDropdown();
 });
 
+
+const flagCheckbox = document.getElementById("flagCheckbox");
+
+    // Listen for changes on the checkbox.
+    flagCheckbox.addEventListener("change", function() {
+      flagEnabled = flagCheckbox.checked;
+      console.log("Flag enabled:", flagEnabled);
+    });
     
     // =====================================================
     // End Integration
