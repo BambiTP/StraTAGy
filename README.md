@@ -2,7 +2,21 @@ https://greasyfork.org/en/scripts/467747-fortunate-maps-stratagy USERSCRIPT FOR 
 
  https://bambitp.github.io/StraTAGy/  PAGE
 # StraTAGy
-Version 0.6
+Version 0.7
+
+version 0.7
+
+Right click a flag/bomb/boost/powerup pad/gate to cycle its state (e.g. show a flag already taken, a used bomb/boost, which powerup a pad rolls)
+
+Shift+right click a ball to open a properties menu - toggle Flag, Yellow Flag, Juke Juice, Rolling Bomb, and Tagpro independently
+
+Added a Text tool - click to place a text box and type, right click an existing one to edit, with font/size/bold/italic/underline/color controls
+
+Added a Select tool - move and resize text boxes, strokes, and shapes (rectangles/circles/lines) with corner handles; Delete/Backspace removes the selection
+
+Balls now only spawn within the map itself instead of the blank margin around it
+
+Fixed drawing lag by putting strokes/shapes on their own layer so a live shape preview no longer redraws the whole map every frame
 
 version 0.6
 
