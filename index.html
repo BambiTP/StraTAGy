@@ -87,20 +87,46 @@
     .mini-toggle {
       display: inline-flex;
       align-items: center;
-      gap: 4px;
-      font-size: 13px;
+      gap: 5px;
+      font-size: 15px;
       cursor: pointer;
       white-space: nowrap;
     }
+    /* Custom (not native) checkbox - native "appearance: auto" checkboxes
+       ignore CSS border-width in most browsers, so the only way to control
+       how thick the checkmark's lines are is to draw it ourselves. */
     .mini-toggle input[type="checkbox"] {
-      appearance: auto;
-      width: auto;
-      height: auto;
+      appearance: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      width: 18px;
+      height: 18px;
+      margin: 0;
+      border: 2px solid #888;
+      border-radius: 3px;
+      background: #fff;
       transform: none;
-      background: none;
       cursor: pointer;
+      box-sizing: border-box;
+      position: relative;
+      flex-shrink: 0;
     }
-    .mini-toggle input[type="checkbox"]::after { content: none; }
+    .mini-toggle input[type="checkbox"]:not(:checked)::after { content: none !important; }
+    .mini-toggle input[type="checkbox"]:checked {
+      background: #4a90d9;
+      border-color: #4a90d9;
+    }
+    .mini-toggle input[type="checkbox"]:checked::after {
+      content: "";
+      position: absolute;
+      left: 5px;
+      top: 1px;
+      width: 4px;
+      height: 9px;
+      border: solid #fff;
+      border-width: 0 3px 3px 0;
+      transform: rotate(45deg);
+    }
     .arrow-settings {
       display: none;
       align-items: center;
@@ -323,6 +349,7 @@
     .files button, .files input { font-size: 14px; }
     .files button { padding: 4px 10px; }
     #zoomOutButton, #zoomInButton, #fitButton { background-color: gray; }
+    #saveViewButton, #saveFullButton { background-color: teal; }
     .container { display: flex; flex: 1; min-height: 0; }
     .canvas-wrapper {
       position: relative;
@@ -459,6 +486,8 @@ input[type="checkbox"]:checked::after {
       <button id="zoomOutButton" onclick="zoomOut()">-</button>
       <button id="zoomInButton" onclick="zoomIn()">+</button>
       <button id="fitButton" onclick="fitToScreen()">Fit</button>
+      <button id="saveViewButton" onclick="saveCurrentViewAsPNG()">Save View PNG</button>
+      <button id="saveFullButton" onclick="saveFullMapAsPNG()">Save Full PNG</button>
       <div id="colorDisplay"></div>
       <button id="Info" onclick="openModal()">Info</button>
     </div>
@@ -716,17 +745,97 @@ input[type="checkbox"]:checked::after {
       pathsCanvas.style.transform = transform;
     }
 
+    // Bounding box (in canvas coords) of everything actually on the board -
+    // the map bitmap plus any balls/drawings, even where they stick out
+    // past the map into the blank margin. Used to fit/export just the
+    // content, never the empty margin around it.
+    function computeContentBounds() {
+      var minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+      function extend(x, y) {
+        if (x < minX) minX = x;
+        if (y < minY) minY = y;
+        if (x > maxX) maxX = x;
+        if (y > maxY) maxY = y;
+      }
+      if (finalMapImage) {
+        extend(mapOffsetX, mapOffsetY);
+        extend(mapOffsetX + finalMapImage.width, mapOffsetY + finalMapImage.height);
+      }
+      circles.forEach(function(c) {
+        // Generous pad - covers flag offsets (+/-19px) and the tagpro/bomb
+        // glow rings (radius ~26px) drawn around the 40px ball tile.
+        var pad = 45;
+        extend(c.x - pad, c.y - pad);
+        extend(c.x + 40 + pad, c.y + 40 + pad);
+      });
+      paths.forEach(function(p) {
+        var bbox = shapeBoundingBox(p);
+        var pad = Math.max(2, (p.size || 2) / 2 + 2);
+        extend(bbox.x - pad, bbox.y - pad);
+        extend(bbox.x + bbox.w + pad, bbox.y + bbox.h + pad);
+      });
+      if (minX === Infinity) return { x: 0, y: 0, w: canvas.width, h: canvas.height };
+      minX = Math.max(0, minX);
+      minY = Math.max(0, minY);
+      maxX = Math.min(canvas.width, maxX);
+      maxY = Math.min(canvas.height, maxY);
+      return { x: minX, y: minY, w: Math.max(1, maxX - minX), h: Math.max(1, maxY - minY) };
+    }
+
     function fitToScreen() {
       var wrapperWidth = canvasWrapper.clientWidth;
       var wrapperHeight = canvasWrapper.clientHeight;
       if (!wrapperWidth || !wrapperHeight || !canvas.width || !canvas.height) return;
-      // Fit to the map itself, not the surrounding draw margin.
-      var mapWidth = finalMapImage ? finalMapImage.width : canvas.width;
-      var mapHeight = finalMapImage ? finalMapImage.height : canvas.height;
-      zoom = snapZoom(Math.min(wrapperWidth / mapWidth, wrapperHeight / mapHeight));
-      panX = (wrapperWidth - mapWidth * zoom) / 2 - mapOffsetX * zoom;
-      panY = (wrapperHeight - mapHeight * zoom) / 2 - mapOffsetY * zoom;
+      // Fit to the actual content (map + drawings), not the surrounding
+      // blank draw margin.
+      var bounds = computeContentBounds();
+      zoom = snapZoom(Math.min(wrapperWidth / bounds.w, wrapperHeight / bounds.h));
+      panX = (wrapperWidth - bounds.w * zoom) / 2 - bounds.x * zoom;
+      panY = (wrapperHeight - bounds.h * zoom) / 2 - bounds.y * zoom;
       applyTransform();
+    }
+
+    function triggerPngDownload(sourceCanvas, filename) {
+      var link = document.createElement('a');
+      link.download = filename;
+      link.href = sourceCanvas.toDataURL('image/png');
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    // Composites the map + paths canvases (native resolution, ignoring
+    // current zoom/pan) into one PNG, cropped to just the content's own
+    // bounding box - none of the blank draw margin around it.
+    function saveFullMapAsPNG() {
+      var bounds = computeContentBounds();
+      var out = document.createElement('canvas');
+      out.width = bounds.w;
+      out.height = bounds.h;
+      var octx = out.getContext('2d');
+      octx.drawImage(canvas, bounds.x, bounds.y, bounds.w, bounds.h, 0, 0, bounds.w, bounds.h);
+      octx.drawImage(pathsCanvas, bounds.x, bounds.y, bounds.w, bounds.h, 0, 0, bounds.w, bounds.h);
+      triggerPngDownload(out, 'stratagy-full-map.png');
+    }
+
+    // Captures exactly what's visible in the canvas-wrapper viewport right
+    // now (current zoom/pan), at the viewport's own pixel size.
+    function saveCurrentViewAsPNG() {
+      var wrapperWidth = canvasWrapper.clientWidth;
+      var wrapperHeight = canvasWrapper.clientHeight;
+      var out = document.createElement('canvas');
+      out.width = wrapperWidth;
+      out.height = wrapperHeight;
+      var octx = out.getContext('2d');
+      octx.fillStyle = '#1e1e1e';
+      octx.fillRect(0, 0, wrapperWidth, wrapperHeight);
+      octx.save();
+      octx.translate(panX, panY);
+      octx.scale(zoom, zoom);
+      octx.drawImage(canvas, 0, 0);
+      octx.drawImage(pathsCanvas, 0, 0);
+      octx.restore();
+      triggerPngDownload(out, 'stratagy-current-view.png');
     }
 
     function getCanvasCoords(event) {
