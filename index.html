@@ -1035,6 +1035,10 @@ input[type="checkbox"]:checked::after {
     // Background layer: map bitmap + balls. Expensive (a full-size
     // drawImage of the baked map), so it's only touched on actual changes
     // to those things - never on every mousemove of an in-progress stroke.
+    // Only the baked map bitmap itself - never balls/drawings, so this
+    // (the expensive full-canvas fillRect + drawImage of the map) only
+    // needs to run when the map bitmap actually changes: on load, and
+    // when a right-click cycles a tile's state (see cycleTileStateAt).
     function drawBackgroundLayer() {
       ctx.fillStyle = '#000000';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -1042,7 +1046,6 @@ input[type="checkbox"]:checked::after {
         ctx.drawImage(finalMapImage, mapOffsetX, mapOffsetY, finalMapImage.width, finalMapImage.height);
       }
       redrawToggledElements();
-      drawCircles();
     }
 
     // Runs `fn` with the paths canvas as the active drawing target, so the
@@ -1063,6 +1066,10 @@ input[type="checkbox"]:checked::after {
     function drawPathsLayer() {
       withPathsCtx(function() {
         pathsCtx.clearRect(0, 0, pathsCanvas.width, pathsCanvas.height);
+        // Balls live on this cheap, always-redrawn layer too (on top of
+        // the map, under paths/shapes) so adding/moving/erasing one never
+        // has to touch drawBackgroundLayer's expensive full-map redraw.
+        drawCircles();
         drawPaths();
         drawSelectionOverlay();
       });
@@ -1091,7 +1098,7 @@ input[type="checkbox"]:checked::after {
     hasJuke: withJuke, hasBomb: withBomb, hasTagpro: withTagpro,
   };
   circles.push(tileObj);
-  drawCanvas();
+  drawPathsLayer();
 }
 
 function drawCircle(tileObj) {
@@ -1467,8 +1474,8 @@ function renderBallIcons() {
       });
     }
     
-    function clearPaths() { paths = []; drawCanvas(); }
-    function clearCanvas() { circles = []; paths = []; drawCanvas(); }
+    function clearPaths() { paths = []; drawPathsLayer(); }
+    function clearCanvas() { circles = []; paths = []; drawPathsLayer(); }
     function updatePathSize() {
       pathSize = Number(document.getElementById("sizeInput").value);
       rescaleArrowDims();
@@ -1537,7 +1544,7 @@ function renderBallIcons() {
   var i = circleIndexAt(event);
   if (i === -1) return false;
   circles.splice(i, 1);
-  drawCanvas();
+  drawPathsLayer();
   return true;
 }
 
@@ -1584,7 +1591,7 @@ function renderBallIcons() {
         if (!ballPropsTarget) return;
         ballPropsTarget[prop.key] = !ballPropsTarget[prop.key];
         refreshBallPropsMenu();
-        drawCanvas();
+        drawPathsLayer();
       });
     });
 
@@ -1619,7 +1626,7 @@ function moveCircle(event) {
     // Keep the mouse at the center of the square by subtracting 20.
     selectedCircle.x = coords.x - 20;
     selectedCircle.y = coords.y - 20;
-    drawCanvas();
+    drawPathsLayer();
   }
 }
 // Repaint one baked map cell with its current cycled state's sprite -
@@ -1678,7 +1685,7 @@ canvas.addEventListener("contextmenu", function(event) {
   cycleTileStateAt(event);
 });
 function undo() {
-      if (paths.length > 0) { paths.pop(); drawCanvas(); }
+      if (paths.length > 0) { paths.pop(); drawPathsLayer(); }
     }
     
     var isFreeDrawing = false;
@@ -1797,7 +1804,7 @@ function undo() {
       var coords = getCanvasCoords(event);
       var end = shapeEndPoint(tool, shapeStartX, shapeStartY, coords.x, coords.y);
       paths.push(buildShapeObject(tool, shapeStartX, shapeStartY, end.x, end.y));
-      drawCanvas();
+      drawPathsLayer();
     }
 
     // =====================================================
@@ -2768,9 +2775,14 @@ if (mapJSONData && mapJSONData.fields && mapJSONData.fields[fieldKey]) {
         // .height are used, and lets right-click state cycling repaint one
         // tile in place with no re-encode/reload round-trip.
         finalMapImage = finalCanvas;
-        // Scale the drawable margin with the map's own size so small maps
-        // get roomy margins and huge maps don't blow up canvas memory.
-        MAP_MARGIN = Math.max(finalMapImage.width, finalMapImage.height) * 2;
+        // Fixed drawable margin around the map, regardless of map size -
+        // balls/paths now live entirely on the cheap pathsCanvas layer
+        // (see drawPathsLayer), so the canvas no longer needs to be huge
+        // just to keep the expensive background redraw rare; it was rare
+        // already. A flat margin keeps both canvases' pixel area (and
+        // every fillRect/clearRect/drawImage over them) proportional to
+        // the map itself instead of blowing up quadratically with it.
+        MAP_MARGIN = 400;
         canvas.width = finalMapImage.width + MAP_MARGIN * 2;
         canvas.height = finalMapImage.height + MAP_MARGIN * 2;
         pathsCanvas.width = canvas.width;
