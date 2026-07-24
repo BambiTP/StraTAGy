@@ -24,13 +24,18 @@
       margin-right: 10px;
     }
     #green { background-color: green; }
-    #redpath { background-color: red; }
-    #bluepath { background-color: blue; }
-    #blackpath { background-color: black; }
     #clearButton { background-color: darkred; }
     #undoButton { background-color: tomato; }
     #Info { background-color: lime; }
-    #colorAdd { background-color: gray; padding: 4px 10px; font-size: 13px; }
+    #colorAdd {
+      background-color: gray; /* overwritten to match #colorInput's value once JS runs */
+      padding: 4px 9px;
+      font-size: 12px;
+      color: #fff;
+      text-shadow: 0 0 2px #000, 0 0 3px #000;
+      border: 1px solid #999;
+      border-radius: 4px;
+    }
     #colors {
       display: flex;
       flex-wrap: wrap;
@@ -44,7 +49,7 @@
     }
     .toggle-btn {
       display: inline-block;
-      padding: 10px 20px;
+      padding: 4px 10px;
       background-color: #e0e0e0;
       border-radius: 5px;
       cursor: pointer;
@@ -148,19 +153,6 @@
     .arrow-dim-control.hidden { display: none; }
     .arrow-dim-control input[type="number"] { width: 44px; }
     input[type="radio"] { display: none; }
-    #colorDisplay {
-      width: 30px;
-      height: 30px;
-      margin-right: 10px;
-      border-radius: 50%;
-      background-color: var(--path-color);
-      display: inline-block;
-      vertical-align: middle;
-      border: 3px solid #fff;
-      outline: 1px solid #bbb;
-      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
-      transition: background-color 0.15s ease;
-    }
     #colorInput {
       width: 22px;
       height: 22px;
@@ -182,8 +174,9 @@
       margin: 6px 0;
     }
     #colorName {
-      padding: 6px 10px;
-      font-size: 13px;
+      padding: 3px 6px;
+      font-size: 12px;
+      width: 90px;
       border: 1px solid #bbb;
       border-radius: 5px;
       outline: none;
@@ -221,17 +214,6 @@
     .sidebar button {
       margin: 5px 0;
       width: auto;
-    }
-    #greenpath { background-color: green; }
-    #pinkpath { background-color: pink; }
-    #yellowpath { background-color: yellow; }
-    #purplepath { background-color: purple; }
-    #orangepath { background-color: orange; }
-    #graypath { background-color: gray; }
-    #whitepath {
-      background-color: white;
-      color: black;
-      border: ridge;
     }
     .modal {
       display: none;
@@ -275,6 +257,56 @@
       cursor: pointer;
       border-radius: 4px;
     }
+    #paletteToggleButton {
+      background-color: #6c5ce7;
+      color: #fff;
+      border: none;
+      padding: 6px 14px;
+      font-size: 14px;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    .palette-editor {
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid #ddd;
+    }
+    .palette-editor-hidden { display: none; }
+    .palette-json-textbox {
+      width: 100%;
+      height: 180px;
+      box-sizing: border-box;
+      font-family: monospace;
+      font-size: 12px;
+      padding: 6px;
+      border: 1px solid #bbb;
+      border-radius: 4px;
+      resize: vertical;
+    }
+    .palette-json-error {
+      color: #c0392b;
+      font-size: 12px;
+      min-height: 14px;
+      margin-top: 2px;
+    }
+    .palette-editor-controls {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 6px;
+    }
+    .palette-editor-controls button {
+      font-size: 12px;
+      padding: 4px 8px;
+      cursor: pointer;
+      border: 1px solid #bbb;
+      border-radius: 4px;
+      background: #eee;
+      color: #000;
+    }
+    .palette-upload-input { display: none; }
     .ballPropsMenu {
       display: none;
       position: fixed;
@@ -286,14 +318,6 @@
       padding: 8px;
       font-size: 13px;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-    }
-    .ballPropRow {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      padding: 3px 2px;
-      white-space: nowrap;
     }
     .ballPropToggle {
       width: 22px;
@@ -316,6 +340,28 @@
       background-color: #c0392b;
     }
     .ballPropToggle.on { background-color: #27ae60; }
+    .ballPropSection {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 3px 2px;
+    }
+    .ballPropSection + .ballPropSection {
+      margin-top: 4px;
+      border-top: 1px solid #555;
+      padding-top: 8px;
+    }
+    .ballPropIconToggle {
+      width: 28px;
+      height: 28px;
+    }
+    .ballPropIcon {
+      width: 22px;
+      height: 22px;
+      image-rendering: pixelated;
+      display: block;
+      pointer-events: none;
+    }
     .textEditOverlay {
       position: fixed;
       z-index: 10000;
@@ -395,16 +441,49 @@
 #fm-dropdown-button {
     color: black;}
 
-.checkbox-container {
-  display: inline-flex;
-  flex-direction: column; /* Stack the label on top of the checkbox */
-  align-items: center;
-}
-.player-props-row {
+.player-props-stack {
   display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  flex-wrap: wrap;
+  flex-direction: column;
+  gap: 4px;
+}
+.flag-selector-row, .pup-toggle-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: nowrap;
+}
+.icon-checkbox-label {
+  position: relative;
+  display: inline-block;
+  width: 28px;
+  height: 28px;
+  cursor: pointer;
+}
+input[type="checkbox"].icon-checkbox-input {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 28px;
+  height: 28px;
+  margin: 0;
+  opacity: 0;
+  transform: none;
+  cursor: pointer;
+  z-index: 1;
+}
+.icon-checkbox-canvas {
+  display: block;
+  width: 28px;
+  height: 28px;
+  image-rendering: pixelated;
+  border: 2px solid #999;
+  border-radius: 4px;
+  background: #d4d4d4;
+  box-sizing: border-box;
+}
+input[type="checkbox"].icon-checkbox-input:checked ~ .icon-checkbox-canvas {
+  border-color: #27ae60;
+  box-shadow: 0 0 0 2px #27ae6080;
 }
 .ball-button {
   padding: 2px;
@@ -424,14 +503,6 @@
   display: flex;
   align-items: center;
   gap: 10px;
-}
-
-/* Style for the label above the checkbox */
-.checkbox-label {
-  font-weight: bold;
-  font-size: 12px;
-  font: fantasy;
-  transform: translate(-5px, -4px);
 }
 
 /* Remove the default checkbox appearance and set custom dimensions */
@@ -488,7 +559,6 @@ input[type="checkbox"]:checked::after {
       <button id="fitButton" onclick="fitToScreen()">Fit</button>
       <button id="saveViewButton" onclick="saveCurrentViewAsPNG()">Save View PNG</button>
       <button id="saveFullButton" onclick="saveFullMapAsPNG()">Save Full PNG</button>
-      <div id="colorDisplay"></div>
       <button id="Info" onclick="openModal()">Info</button>
     </div>
   </div>
@@ -614,26 +684,34 @@ input[type="checkbox"]:checked::after {
         <button id="blue" class="ball-button" onclick="drawBlueCircle()">
           <canvas id="blueBallIcon" class="ball-icon" width="40" height="40"></canvas>
         </button>
-        <div class="player-props-row">
-          <div class="checkbox-container">
-            <label for="flagCheckbox" class="checkbox-label">Flag</label>
-            <input type="checkbox" id="flagCheckbox">
+        <div class="player-props-stack">
+          <div class="flag-selector-row">
+            <label class="icon-checkbox-label" for="redFlagCheckbox">
+              <input type="checkbox" id="redFlagCheckbox" class="icon-checkbox-input">
+              <canvas class="icon-checkbox-canvas" id="redFlagIcon" width="28" height="28"></canvas>
+            </label>
+            <label class="icon-checkbox-label" for="blueFlagCheckbox">
+              <input type="checkbox" id="blueFlagCheckbox" class="icon-checkbox-input">
+              <canvas class="icon-checkbox-canvas" id="blueFlagIcon" width="28" height="28"></canvas>
+            </label>
+            <label class="icon-checkbox-label" for="yellowFlagCheckbox">
+              <input type="checkbox" id="yellowFlagCheckbox" class="icon-checkbox-input">
+              <canvas class="icon-checkbox-canvas" id="yellowFlagIcon" width="28" height="28"></canvas>
+            </label>
           </div>
-          <div class="checkbox-container">
-            <label for="yellowFlagCheckbox" class="checkbox-label">NF</label>
-            <input type="checkbox" id="yellowFlagCheckbox">
-          </div>
-          <div class="checkbox-container">
-            <label for="jukeCheckbox" class="checkbox-label">JJ</label>
-            <input type="checkbox" id="jukeCheckbox">
-          </div>
-          <div class="checkbox-container">
-            <label for="bombCheckbox" class="checkbox-label">RB</label>
-            <input type="checkbox" id="bombCheckbox">
-          </div>
-          <div class="checkbox-container">
-            <label for="tagproCheckbox" class="checkbox-label">TP</label>
-            <input type="checkbox" id="tagproCheckbox">
+          <div class="pup-toggle-row">
+            <label class="icon-checkbox-label" for="jukeCheckbox">
+              <input type="checkbox" id="jukeCheckbox" class="icon-checkbox-input">
+              <canvas class="icon-checkbox-canvas" id="jukeIcon" width="28" height="28"></canvas>
+            </label>
+            <label class="icon-checkbox-label" for="bombCheckbox">
+              <input type="checkbox" id="bombCheckbox" class="icon-checkbox-input">
+              <canvas class="icon-checkbox-canvas" id="bombIcon" width="28" height="28"></canvas>
+            </label>
+            <label class="icon-checkbox-label" for="tagproCheckbox">
+              <input type="checkbox" id="tagproCheckbox" class="icon-checkbox-input">
+              <canvas class="icon-checkbox-canvas" id="tagproIcon" width="28" height="28"></canvas>
+            </label>
           </div>
         </div>
       </div>
@@ -644,18 +722,7 @@ input[type="checkbox"]:checked::after {
         <input type="text" value="Some Color" id="colorName">
         <button id="colorAdd" onclick="colorAdd('colorInput')">Add Color</button>
       </div>
-      <div id="colors">
-        <button id="redpath" onclick="updatePathColor('red')">Red</button> 
-        <button id="bluepath" onclick="updatePathColor('blue')">Blue</button>
-        <button id="greenpath" onclick="updatePathColor('green')">Green</button>
-        <button id="yellowpath" onclick="updatePathColor('yellow')">Yellow</button>
-        <button id="pinkpath" onclick="updatePathColor('pink')">Pink</button>
-        <button id="orangepath" onclick="updatePathColor('orange')">Orange</button>
-        <button id="purplepath" onclick="updatePathColor('purple')">Purple</button>
-        <button id="graypath" onclick="updatePathColor('gray')">Gray</button>
-        <button id="blackpath" onclick="updatePathColor('black')">Black</button>
-        <button id="whitepath" onclick="updatePathColor('white')">White</button>
-      </div>
+      <div id="colors"></div>
     </div>
   </div>
   
@@ -667,11 +734,16 @@ input[type="checkbox"]:checked::after {
   <div id="textEditOverlay" contenteditable="true" class="textEditOverlay hidden"></div>
 
   <div id="ballPropsMenu" class="ballPropsMenu">
-    <div class="ballPropRow"><span>Flag</span><button type="button" class="ballPropToggle" id="ballPropFlag">✕</button></div>
-    <div class="ballPropRow"><span>NF</span><button type="button" class="ballPropToggle" id="ballPropYellowFlag">✕</button></div>
-    <div class="ballPropRow"><span>JJ</span><button type="button" class="ballPropToggle" id="ballPropJuke">✕</button></div>
-    <div class="ballPropRow"><span>RB</span><button type="button" class="ballPropToggle" id="ballPropBomb">✕</button></div>
-    <div class="ballPropRow"><span>TP</span><button type="button" class="ballPropToggle" id="ballPropTagpro">✕</button></div>
+    <div class="ballPropSection">
+      <button type="button" class="ballPropToggle ballPropIconToggle" id="ballPropRedFlag"><canvas class="ballPropIcon" id="ballPropRedFlagIcon" width="24" height="24"></canvas></button>
+      <button type="button" class="ballPropToggle ballPropIconToggle" id="ballPropBlueFlag"><canvas class="ballPropIcon" id="ballPropBlueFlagIcon" width="24" height="24"></canvas></button>
+      <button type="button" class="ballPropToggle ballPropIconToggle" id="ballPropYellowFlag"><canvas class="ballPropIcon" id="ballPropYellowFlagIcon" width="24" height="24"></canvas></button>
+    </div>
+    <div class="ballPropSection">
+      <button type="button" class="ballPropToggle ballPropIconToggle" id="ballPropJuke"><canvas class="ballPropIcon" id="ballPropJukeIcon" width="24" height="24"></canvas></button>
+      <button type="button" class="ballPropToggle ballPropIconToggle" id="ballPropBomb"><canvas class="ballPropIcon" id="ballPropBombIcon" width="24" height="24"></canvas></button>
+      <button type="button" class="ballPropToggle ballPropIconToggle" id="ballPropTagpro"><canvas class="ballPropIcon" id="ballPropTagproIcon" width="24" height="24"></canvas></button>
+    </div>
   </div>
 
   <div id="myModal" class="modal">
@@ -690,6 +762,18 @@ input[type="checkbox"]:checked::after {
         <p>You Can Get The Map Code and PNG From <a href="https://fortunatemaps.herokuapp.com/">Fortunate Maps</a></p>
         <p><a href="https://github.com/BambiTP/StraTAGy">Github</a></p>
         <p><a href="https://greasyfork.org/en/scripts/467747-fortunate-maps-stratagy">FM Userscript</a></p>
+        <button id="paletteToggleButton" onclick="togglePaletteEditor()">Palette</button>
+        <div id="paletteEditor" class="palette-editor palette-editor-hidden">
+          <textarea id="paletteJsonTextbox" class="palette-json-textbox" spellcheck="false"></textarea>
+          <div id="paletteJsonError" class="palette-json-error"></div>
+          <div class="palette-editor-controls">
+            <button type="button" onclick="saveColorsToCache()">Save to Cache</button>
+            <button type="button" onclick="copyPaletteJson()">Copy to Clipboard</button>
+            <button type="button" onclick="downloadPaletteJson()">Download</button>
+            <button type="button" onclick="document.getElementById('paletteUploadInput').click()">Upload</button>
+            <input type="file" id="paletteUploadInput" class="palette-upload-input" accept="application/json,.json">
+          </div>
+        </div>
         <button class="close-button" onclick="closeModal()">Close</button>
       </div>
     </div>
@@ -1015,11 +1099,11 @@ input[type="checkbox"]:checked::after {
     var selectedCircle = null;
     var currentLine = null;
     var gridSize = 40;
-    let flagEnabled = false;
     // Defaults applied to a newly spawned ball, mirroring the same
     // properties the shift+right-click ball menu lets you toggle after
-    // the fact (see BALL_PROP_TOGGLES).
-    let yellowFlagEnabled = false;
+    // the fact (see BALL_PROP_TOGGLES / FLAG_PROP_TOGGLES). Mutually
+    // exclusive with red/blue/yellow, same as a ball's flagColor field.
+    let flagColorEnabled = null;
     let jukeEnabled = false;
     let bombEnabled = false;
     let tagproEnabled = false;
@@ -1082,7 +1166,7 @@ input[type="checkbox"]:checked::after {
       drawBackgroundLayer();
       drawPathsLayer();
     }
-    function addCircle(color, withFlag, withYellowFlag, withJuke, withBomb, withTagpro) {
+    function addCircle(color, flagColor, withJuke, withBomb, withTagpro) {
   // Choose a random position within the loaded map's own bounds (not the
   // blank MAP_MARGIN drawing area around it) - falls back to the whole
   // canvas if no map has been loaded yet.
@@ -1094,7 +1178,7 @@ input[type="checkbox"]:checked::after {
   var y = minY + Math.floor(Math.random() * spanY);
   var tileObj = {
     x: x, y: y, color: color,
-    hasFlag: withFlag, hasYellowFlag: withYellowFlag,
+    flagColor: flagColor,
     hasJuke: withJuke, hasBomb: withBomb, hasTagpro: withTagpro,
   };
   circles.push(tileObj);
@@ -1127,51 +1211,35 @@ function drawCircle(tileObj) {
     config.tileSize, config.tileSize  // Destination width & height.
   );
 
-  // If the circle should have a flag, draw it.
-  if (tileObj.hasFlag) {
-    let flagTileX, flagTileY;
-    if (tileObj.color === "red") {
-      flagTileX = 15; // For red, flag is at column 15.
-      flagTileY = 1;  // Row 1.
-    } else if (tileObj.color === "blue") {
-      flagTileX = 14; // For blue, flag is at column 14.
-      flagTileY = 1;  // Row 1.
-    } else {
-      // Fallback flag tile (optional).
-      flagTileX = 0;
-      flagTileY = 1;
-    }
-    // Draw the flag with an offset (x: +19, y: -19) and at 40x40 size.
+  // Carried flag - one of red/blue/yellow, mutually exclusive (tileObj.
+  // flagColor), matched to GrabTag client's own flag placement (client/
+  // game/render/playerRenderer.js's flagLayer.position.set(13, -32)
+  // relative to the ball's center; since both ball and flag sprites are
+  // the same 40x40 size and centered there, that's the same offset from
+  // the ball's top-left corner used below).
+  if (tileObj.flagColor) {
+    var FLAG_TILE_COLUMNS = { red: 14, blue: 15, yellow: 13 };
     ctx.drawImage(
       images.tile,
-      flagTileX * config.tileSize, flagTileY * config.tileSize,
-      40, 40,  // Source dimensions for the flag (40x40).
-      tileObj.x + 19, tileObj.y - 19,
-      40, 40   // Destination dimensions.
-    );
-  }
-
-  // Neutral (yellow) flag - independent of the team flag above, offset to
-  // the opposite corner (x: -19, y: -19) so both can show at once.
-  if (tileObj.hasYellowFlag) {
-    ctx.drawImage(
-      images.tile,
-      13 * config.tileSize, 1 * config.tileSize, // Yellow flag tile (STATE_FAMILIES "808000" ground state).
+      FLAG_TILE_COLUMNS[tileObj.flagColor] * config.tileSize, 1 * config.tileSize,
       40, 40,
-      tileObj.x - 19, tileObj.y - 19,
+      tileObj.x + 13, tileObj.y - 32,
       40, 40
     );
   }
 
   // Powerup indicators (set via the shift+right-click ball properties
-  // menu). TagPro's real particle/ring/glow animations aren't in the
-  // static texture pack, so each gets its own static stand-in, drawn on
-  // top of the ball - no combined ring+badge, just one cue per state:
+  // menu). TagPro's real particle animations aren't in the static texture
+  // pack, so each gets its own static stand-in, drawn on top of the ball -
+  // matched to GrabTag client's own static base shapes (client/game/render/
+  // playerRenderer.js's drawPupBase), just without the particle emitters:
   // - Juke Juice: a small badge of the pad's own art (STATE_FAMILIES'
-  //   "00ff00" juke state), nothing else.
-  // - Tagpro: a plain green ring around the ball, no badge.
-  // - Rolling Bomb: a glow layered over the ball, no ring or badge.
-  var cx = tileObj.x + 19, cy = tileObj.y + 19;
+  //   "00ff00" juke state), nothing else - GrabTag draws no base shape
+  //   for this one either, only particles.
+  // - Tagpro: a solid green tint over the ball plus a 2px green outline,
+  //   not a ring.
+  // - Rolling Bomb: a solid yellow tint over the ball, not a white glow.
+  var cx = tileObj.x + 20, cy = tileObj.y + 20;
 
   if (tileObj.hasJuke) {
     ctx.drawImage(images.tile, 12 * config.tileSize, 4 * config.tileSize, config.tileSize, config.tileSize,
@@ -1180,16 +1248,13 @@ function drawCircle(tileObj) {
 
   if (tileObj.hasTagpro) {
     ctx.save();
-    ctx.globalCompositeOperation = 'lighter';
-    var tpGlow = ctx.createRadialGradient(cx, cy, 15, cx, cy, 24);
-    tpGlow.addColorStop(0, '#00ff0000');
-    tpGlow.addColorStop(0.3, '#00ff00cc');
-    tpGlow.addColorStop(0.75, '#00ff00cc');
-    tpGlow.addColorStop(1, '#00ff0000');
-    ctx.fillStyle = tpGlow;
+    ctx.fillStyle = 'rgba(0, 255, 0, 0.25)';
     ctx.beginPath();
-    ctx.arc(cx, cy, 24, 0, Math.PI * 2);
+    ctx.arc(cx, cy, 20, 0, Math.PI * 2);
     ctx.fill();
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = '#00ff00';
+    ctx.stroke();
     ctx.restore();
   }
 
@@ -1212,12 +1277,12 @@ function drawCircles() {
 }
 
 function drawRedCircle() {
-  addCircle("red", flagEnabled, yellowFlagEnabled, jukeEnabled, bombEnabled, tagproEnabled);
+  addCircle("red", flagColorEnabled, jukeEnabled, bombEnabled, tagproEnabled);
 }
 
 // Function to draw a blue circle when the blue button is pressed.
 function drawBlueCircle() {
-  addCircle("blue", flagEnabled, yellowFlagEnabled, jukeEnabled, bombEnabled, tagproEnabled);
+  addCircle("blue", flagColorEnabled, jukeEnabled, bombEnabled, tagproEnabled);
 }
 
 function renderBallIcons() {
@@ -1231,6 +1296,39 @@ function renderBallIcons() {
     iconCtx.imageSmoothingEnabled = false;
     iconCtx.clearRect(0, 0, entry.canvas.width, entry.canvas.height);
     iconCtx.drawImage(images.tile, entry.tileX * ts, 0, ts, ts, 0, 0, entry.canvas.width, entry.canvas.height);
+  });
+}
+
+// Same tile-sheet coordinates drawCircle() itself uses for these (see
+// STATE_FAMILIES' "ff0000"/"0000ff"/"808000"/"00ff00" entries) - drawn once
+// onto each checkbox/button's own canvas so the flag-selector and pup-toggle
+// controls show the actual pad/flag art instead of RF/BF/NF/JJ/RB/TP text.
+var PROP_ICON_TILES = {
+  redFlagIcon:            { x: 14, y: 1 },
+  blueFlagIcon:           { x: 15, y: 1 },
+  yellowFlagIcon:         { x: 13, y: 1 },
+  jukeIcon:               { x: 12, y: 4 },
+  bombIcon:               { x: 12, y: 5 },
+  tagproIcon:             { x: 12, y: 6 },
+  ballPropRedFlagIcon:    { x: 14, y: 1 },
+  ballPropBlueFlagIcon:   { x: 15, y: 1 },
+  ballPropYellowFlagIcon: { x: 13, y: 1 },
+  ballPropJukeIcon:       { x: 12, y: 4 },
+  ballPropBombIcon:       { x: 12, y: 5 },
+  ballPropTagproIcon:     { x: 12, y: 6 },
+};
+
+function renderPropIcons() {
+  if (!images.tile) return;
+  var ts = configMap.tileSize;
+  Object.keys(PROP_ICON_TILES).forEach(function(id) {
+    var canvas = document.getElementById(id);
+    if (!canvas) return;
+    var coord = PROP_ICON_TILES[id];
+    var iconCtx = canvas.getContext('2d');
+    iconCtx.imageSmoothingEnabled = false;
+    iconCtx.clearRect(0, 0, canvas.width, canvas.height);
+    iconCtx.drawImage(images.tile, coord.x * ts, coord.y * ts, ts, ts, 0, 0, canvas.width, canvas.height);
   });
 }
 
@@ -1482,7 +1580,7 @@ function renderBallIcons() {
     }
     function updatePathColor(color) {
       pathColor = color;
-      document.documentElement.style.setProperty('--path-color', color);
+      renderPaletteColors();
       var target = currentTextTarget();
       if (target) {
         target.color = color;
@@ -1490,23 +1588,121 @@ function renderBallIcons() {
         drawPathsLayer();
       }
     }
+    // Single source of truth for every button in #colors - both the
+    // original hardcoded defaults and anything added via the picker below,
+    // so the palette JSON editor (see togglePaletteEditor and friends)
+    // reflects and can rewrite the whole palette, not just custom additions.
+    var CUSTOM_COLORS_CACHE_KEY = 'stratagyPaletteColors';
+    var paletteColors = [
+      { name: 'Red', color: 'red' },
+      { name: 'Blue', color: 'blue' },
+      { name: 'Green', color: 'green' },
+      { name: 'Yellow', color: 'yellow' },
+      { name: 'Pink', color: 'pink' },
+      { name: 'Orange', color: 'orange' },
+      { name: 'Purple', color: 'purple' },
+      { name: 'Gray', color: 'gray' },
+      { name: 'Black', color: 'black' },
+      { name: 'White', color: 'white' },
+    ];
+
+    function renderPaletteColors() {
+      var colorsDiv = document.getElementById("colors");
+      colorsDiv.innerHTML = "";
+      paletteColors.forEach(function(entry) {
+        var isWhite = ['white', '#fff', '#ffffff'].indexOf(entry.color.trim().toLowerCase()) !== -1;
+        var colorButton = document.createElement("button");
+        colorButton.style.padding = "4px 10px";
+        colorButton.style.fontSize = "13px";
+        colorButton.style.color = isWhite ? "black" : "white";
+        colorButton.style.border = isWhite ? "1px solid black" : "none";
+        colorButton.style.borderRadius = "4px";
+        colorButton.style.cursor = "pointer";
+        colorButton.style.backgroundColor = entry.color;
+        // Two-tone ring (white then black) instead of a single-color
+        // outline, so the "currently selected" indicator stays visible no
+        // matter what color the button itself is - this replaces the old
+        // #colorDisplay swatch that used to show the pick separately.
+        if (entry.color === pathColor) {
+          colorButton.style.boxShadow = '0 0 0 2px #fff, 0 0 0 4px #000';
+        }
+        colorButton.onclick = function() { updatePathColor(entry.color); };
+        colorButton.appendChild(document.createTextNode(entry.name));
+        colorsDiv.appendChild(colorButton);
+      });
+    }
+
     function colorAdd(colorInput) {
       var colorInputElem = document.getElementById(colorInput);
-      var color = colorInputElem.value;
       var colorName = document.getElementById("colorName");
-      var colorsDiv = document.getElementById("colors");
-      var colorButton = document.createElement("button");
-      colorButton.style.padding = "4px 10px";
-      colorButton.style.fontSize = "13px";
-      colorButton.style.color = "white";
-      colorButton.style.border = "none";
-      colorButton.style.borderRadius = "4px";
-      colorButton.style.cursor = "pointer";
-      colorButton.style.backgroundColor = color;
-      colorButton.onclick = function() { updatePathColor(color); };
-      var buttonText = document.createTextNode(colorName.value);
-      colorButton.appendChild(buttonText);
-      colorsDiv.appendChild(colorButton);
+      paletteColors.push({ name: colorName.value, color: colorInputElem.value });
+      renderPaletteColors();
+    }
+
+    // ---- palette JSON editor (Info modal's Palette button) -------------
+    function togglePaletteEditor() {
+      var editor = document.getElementById('paletteEditor');
+      var opening = editor.classList.contains('palette-editor-hidden');
+      editor.classList.toggle('palette-editor-hidden');
+      if (opening) {
+        document.getElementById('paletteJsonTextbox').value = JSON.stringify(paletteColors, null, 2);
+        document.getElementById('paletteJsonError').textContent = '';
+      }
+    }
+
+    // Only applies the edit once it parses as an array of {name, color}
+    // objects - typing mid-edit produces plenty of momentarily-invalid
+    // JSON, and applying that would wipe the live palette on every
+    // keystroke instead of just on a good edit.
+    function applyPaletteJsonFromTextarea() {
+      var textbox = document.getElementById('paletteJsonTextbox');
+      var errorEl = document.getElementById('paletteJsonError');
+      var parsed;
+      try {
+        parsed = JSON.parse(textbox.value);
+      } catch (e) {
+        errorEl.textContent = 'Invalid JSON: ' + e.message;
+        return;
+      }
+      if (!Array.isArray(parsed) || !parsed.every(function(entry) {
+        return entry && typeof entry.name === 'string' && typeof entry.color === 'string';
+      })) {
+        errorEl.textContent = 'Expected an array of {"name": "...", "color": "..."} objects.';
+        return;
+      }
+      errorEl.textContent = '';
+      paletteColors = parsed;
+      renderPaletteColors();
+    }
+
+    function saveColorsToCache() {
+      localStorage.setItem(CUSTOM_COLORS_CACHE_KEY, JSON.stringify(paletteColors));
+    }
+
+    function copyPaletteJson() {
+      navigator.clipboard.writeText(document.getElementById('paletteJsonTextbox').value);
+    }
+
+    function downloadPaletteJson() {
+      var blob = new Blob([JSON.stringify(paletteColors, null, 2)], { type: 'application/json' });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = 'stratagy-colors.json';
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function uploadPaletteJson(event) {
+      var file = event.target.files[0];
+      if (!file) return;
+      var reader = new FileReader();
+      reader.onload = function() {
+        document.getElementById('paletteJsonTextbox').value = reader.result;
+        applyPaletteJsonFromTextarea();
+      };
+      reader.readAsText(file);
+      event.target.value = '';
     }
     function getImageUrlByColor(color) {
       var imageUrls = {
@@ -1556,11 +1752,18 @@ function renderBallIcons() {
     var ballPropsTarget = null; // the circle object the open menu edits
 
     var BALL_PROP_TOGGLES = [
-      { id: 'ballPropFlag',       key: 'hasFlag' },
-      { id: 'ballPropYellowFlag', key: 'hasYellowFlag' },
       { id: 'ballPropJuke',       key: 'hasJuke' },
       { id: 'ballPropBomb',       key: 'hasBomb' },
       { id: 'ballPropTagpro',     key: 'hasTagpro' },
+    ];
+
+    // Red/blue/yellow flag - mutually exclusive, unlike the plain booleans
+    // above, so these compare against ballPropsTarget.flagColor instead of
+    // toggling their own independent key.
+    var FLAG_PROP_TOGGLES = [
+      { id: 'ballPropRedFlag',    color: 'red' },
+      { id: 'ballPropBlueFlag',   color: 'blue' },
+      { id: 'ballPropYellowFlag', color: 'yellow' },
     ];
 
     function refreshBallPropsMenu() {
@@ -1568,7 +1771,11 @@ function renderBallIcons() {
       BALL_PROP_TOGGLES.forEach(function(prop) {
         var btn = document.getElementById(prop.id);
         var on = !!ballPropsTarget[prop.key];
-        btn.textContent = on ? '✓' : '✕';
+        btn.classList.toggle('on', on);
+      });
+      FLAG_PROP_TOGGLES.forEach(function(prop) {
+        var btn = document.getElementById(prop.id);
+        var on = ballPropsTarget.flagColor === prop.color;
         btn.classList.toggle('on', on);
       });
     }
@@ -1590,6 +1797,15 @@ function renderBallIcons() {
       document.getElementById(prop.id).addEventListener('click', function() {
         if (!ballPropsTarget) return;
         ballPropsTarget[prop.key] = !ballPropsTarget[prop.key];
+        refreshBallPropsMenu();
+        drawPathsLayer();
+      });
+    });
+
+    FLAG_PROP_TOGGLES.forEach(function(prop) {
+      document.getElementById(prop.id).addEventListener('click', function() {
+        if (!ballPropsTarget) return;
+        ballPropsTarget.flagColor = ballPropsTarget.flagColor === prop.color ? null : prop.color;
         refreshBallPropsMenu();
         drawPathsLayer();
       });
@@ -2663,6 +2879,7 @@ function undo() {
         images.portalRed = portalRedImg;
         images.portalBlue = portalBlueImg;
         renderBallIcons();
+        renderPropIcons();
 
         // Create an offscreen canvas to read the PNG.
         const offCanvas = document.createElement('canvas');
@@ -2925,19 +3142,55 @@ document.addEventListener("DOMContentLoaded", function() {
 });
 
 
-const flagCheckbox = document.getElementById("flagCheckbox");
+// Keeps the Add Color button's own background in sync with whatever color
+// is currently picked, so it previews what you're about to add instead of
+// staying a flat gray regardless of the picker's value.
+const colorAddButton = document.getElementById("colorAdd");
+const colorInputForAddButton = document.getElementById("colorInput");
+function syncColorAddButton() {
+  colorAddButton.style.backgroundColor = colorInputForAddButton.value;
+}
+colorInputForAddButton.addEventListener("input", syncColorAddButton);
+syncColorAddButton();
 
-    // Listen for changes on the checkbox.
-    flagCheckbox.addEventListener("change", function() {
-      flagEnabled = flagCheckbox.checked;
-      console.log("Flag enabled:", flagEnabled);
+// Loads whatever was last saved via the palette editor's "Save to Cache"
+// button, if anything - otherwise the hardcoded defaults in paletteColors
+// stand. Either way, #colors starts empty (see the palette editor HTML
+// change) and needs this to actually populate it.
+(function loadCachedPaletteColors() {
+  var cached = localStorage.getItem(CUSTOM_COLORS_CACHE_KEY);
+  if (cached) {
+    try { paletteColors = JSON.parse(cached); } catch (e) { /* fall back to defaults */ }
+  }
+  renderPaletteColors();
+})();
+
+document.getElementById('paletteJsonTextbox').addEventListener('input', applyPaletteJsonFromTextarea);
+document.getElementById('paletteUploadInput').addEventListener('change', uploadPaletteJson);
+
+const redFlagCheckbox    = document.getElementById("redFlagCheckbox");
+const blueFlagCheckbox   = document.getElementById("blueFlagCheckbox");
+const yellowFlagCheckbox = document.getElementById("yellowFlagCheckbox");
+const jukeCheckbox       = document.getElementById("jukeCheckbox");
+const bombCheckbox       = document.getElementById("bombCheckbox");
+const tagproCheckbox     = document.getElementById("tagproCheckbox");
+
+    // Red/blue/yellow flag checkboxes are mutually exclusive - checking one
+    // clears the other two, mirroring a ball's single flagColor field.
+    [['red', redFlagCheckbox], ['blue', blueFlagCheckbox], ['yellow', yellowFlagCheckbox]].forEach(function(pair) {
+      var color = pair[0], checkbox = pair[1];
+      checkbox.addEventListener("change", function() {
+        if (checkbox.checked) {
+          flagColorEnabled = color;
+          [redFlagCheckbox, blueFlagCheckbox, yellowFlagCheckbox].forEach(function(other) {
+            if (other !== checkbox) other.checked = false;
+          });
+        } else {
+          flagColorEnabled = null;
+        }
+      });
     });
 
-    const yellowFlagCheckbox = document.getElementById("yellowFlagCheckbox");
-    const jukeCheckbox       = document.getElementById("jukeCheckbox");
-    const bombCheckbox       = document.getElementById("bombCheckbox");
-    const tagproCheckbox     = document.getElementById("tagproCheckbox");
-    yellowFlagCheckbox.addEventListener("change", function() { yellowFlagEnabled = yellowFlagCheckbox.checked; });
     jukeCheckbox.addEventListener("change", function() { jukeEnabled = jukeCheckbox.checked; });
     bombCheckbox.addEventListener("change", function() { bombEnabled = bombCheckbox.checked; });
     tagproCheckbox.addEventListener("change", function() { tagproEnabled = tagproCheckbox.checked; });
