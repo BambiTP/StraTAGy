@@ -394,8 +394,15 @@
     }
     .files button, .files input { font-size: 14px; }
     .files button { padding: 4px 10px; }
-    #zoomOutButton, #zoomInButton, #fitButton { background-color: gray; }
-    #saveViewButton, #saveFullButton { background-color: teal; }
+    .btn-group { display: flex; }
+    .btn-group button { margin-right: 0; border-radius: 0; }
+    .btn-group button:not(:last-child) { border-right: 1px solid rgba(255, 255, 255, 0.3); }
+    .btn-group button:first-child { border-top-left-radius: 4px; border-bottom-left-radius: 4px; }
+    .btn-group button:last-child { border-top-right-radius: 4px; border-bottom-right-radius: 4px; }
+    .btn-group .icon-btn { padding: 4px 8px; font-size: 16px; line-height: 1; flex: 0 0 auto; }
+    #zoomOutButton, #zoomInButton, #fitButton { background-color: #3f6b8a; }
+    #saveViewButton, #downloadViewButton { background-color: teal; }
+    #saveFullButton, #downloadFullButton { background-color: #7d3fa8; }
     .container { display: flex; flex: 1; min-height: 0; }
     .canvas-wrapper {
       position: relative;
@@ -554,11 +561,19 @@ input[type="checkbox"]:checked::after {
       <button id="clearButton" onclick="clearPaths()">Clear Lines</button>
       <button id="clearButton" onclick="clearCanvas()">Clear All</button>
       <button id="undoButton" onclick="undo()">Undo</button>
-      <button id="zoomOutButton" onclick="zoomOut()">-</button>
-      <button id="zoomInButton" onclick="zoomIn()">+</button>
-      <button id="fitButton" onclick="fitToScreen()">Fit</button>
-      <button id="saveViewButton" onclick="saveCurrentViewAsPNG()">Save View PNG</button>
-      <button id="saveFullButton" onclick="saveFullMapAsPNG()">Save Full PNG</button>
+      <div class="btn-group" title="Zoom controls">
+        <button id="zoomOutButton" onclick="zoomOut()">-</button>
+        <button id="zoomInButton" onclick="zoomIn()">+</button>
+        <button id="fitButton" onclick="fitToScreen()">Fit</button>
+      </div>
+      <div class="btn-group" title="Current view - copy or download as PNG">
+        <button id="saveViewButton" onclick="copyCurrentViewToClipboard(this)">Copy View</button>
+        <button id="downloadViewButton" class="icon-btn" onclick="saveCurrentViewAsPNG()" title="Download current view as PNG" aria-label="Download current view as PNG">&#8681;</button>
+      </div>
+      <div class="btn-group" title="Full map - copy or download as PNG">
+        <button id="saveFullButton" onclick="copyFullMapToClipboard(this)">Copy Full Map</button>
+        <button id="downloadFullButton" class="icon-btn" onclick="saveFullMapAsPNG()" title="Download full map as PNG" aria-label="Download full map as PNG">&#8681;</button>
+      </div>
       <button id="Info" onclick="openModal()">Info</button>
     </div>
   </div>
@@ -888,10 +903,39 @@ input[type="checkbox"]:checked::after {
       document.body.removeChild(link);
     }
 
+    // Copies a canvas's PNG contents to the system clipboard so it can be
+    // pasted elsewhere without going through a file download. Briefly
+    // updates the triggering button's label to confirm success/failure.
+    function copyCanvasToClipboard(sourceCanvas, button) {
+      var originalLabel = button ? button.textContent : null;
+      function flash(text, revertMs) {
+        if (!button) return;
+        button.textContent = text;
+        button.disabled = true;
+        setTimeout(function() {
+          button.textContent = originalLabel;
+          button.disabled = false;
+        }, revertMs);
+      }
+      if (!navigator.clipboard || typeof ClipboardItem === 'undefined') {
+        alert('Copying images to the clipboard is not supported in this browser. Use the download button instead.');
+        return;
+      }
+      sourceCanvas.toBlob(function(blob) {
+        if (!blob) return;
+        navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]).then(function() {
+          flash('Copied!', 1200);
+        }).catch(function(err) {
+          console.error('[StraTAGy] Clipboard copy failed:', err);
+          flash('Copy failed', 1500);
+        });
+      }, 'image/png');
+    }
+
     // Composites the map + paths canvases (native resolution, ignoring
     // current zoom/pan) into one PNG, cropped to just the content's own
     // bounding box - none of the blank draw margin around it.
-    function saveFullMapAsPNG() {
+    function buildFullMapCanvas() {
       var bounds = computeContentBounds();
       var out = document.createElement('canvas');
       out.width = bounds.w;
@@ -899,12 +943,12 @@ input[type="checkbox"]:checked::after {
       var octx = out.getContext('2d');
       octx.drawImage(canvas, bounds.x, bounds.y, bounds.w, bounds.h, 0, 0, bounds.w, bounds.h);
       octx.drawImage(pathsCanvas, bounds.x, bounds.y, bounds.w, bounds.h, 0, 0, bounds.w, bounds.h);
-      triggerPngDownload(out, 'stratagy-full-map.png');
+      return out;
     }
 
     // Captures exactly what's visible in the canvas-wrapper viewport right
     // now (current zoom/pan), at the viewport's own pixel size.
-    function saveCurrentViewAsPNG() {
+    function buildCurrentViewCanvas() {
       var wrapperWidth = canvasWrapper.clientWidth;
       var wrapperHeight = canvasWrapper.clientHeight;
       var out = document.createElement('canvas');
@@ -919,7 +963,23 @@ input[type="checkbox"]:checked::after {
       octx.drawImage(canvas, 0, 0);
       octx.drawImage(pathsCanvas, 0, 0);
       octx.restore();
-      triggerPngDownload(out, 'stratagy-current-view.png');
+      return out;
+    }
+
+    function saveFullMapAsPNG() {
+      triggerPngDownload(buildFullMapCanvas(), 'stratagy-full-map.png');
+    }
+
+    function copyFullMapToClipboard(button) {
+      copyCanvasToClipboard(buildFullMapCanvas(), button);
+    }
+
+    function saveCurrentViewAsPNG() {
+      triggerPngDownload(buildCurrentViewCanvas(), 'stratagy-current-view.png');
+    }
+
+    function copyCurrentViewToClipboard(button) {
+      copyCanvasToClipboard(buildCurrentViewCanvas(), button);
     }
 
     function getCanvasCoords(event) {
