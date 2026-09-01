@@ -199,6 +199,7 @@
     }
     #mapCode { width: 150px; height: 25px; }
     #loadMap { background-color: gray; }
+    #fm-map-dropdown-button { background-color: gray; }
     #open-form-button { background-color: #f9e076; }
     .sidebar {
       display: flex;
@@ -553,7 +554,16 @@ input[type="checkbox"]:checked::after {
     <div class="files-left">
       <label for="mapCode">Enter Map Code:</label>
       <input type="text" id="mapCode" name="mapCode" required>
-      <button id="loadMap" onclick="loadMap()">Load Map</button>
+      <div class="btn-group" id="fm-map-dropdown" style="position: relative;" title="Load map / choose a named map">
+        <button id="loadMap" onclick="loadMap()">Load Map</button>
+        <button id="fm-map-dropdown-button" type="button" aria-label="Choose a named map">&#9662;</button>
+        <div id="fm-map-dropdown-menu" style="display: none; background: white; border: 1px solid #ccc; border-radius: 4px; max-height: 220px; overflow-y: auto; padding: 0.5rem; position: absolute; top: 100%; left: 0; z-index: 300; min-width: 220px;">
+          <div style="padding: 0.5rem;">
+            <input type="text" id="fm-map-dropdown-search" placeholder="Search Maps..." style="width: 100%; padding: 4px;">
+          </div>
+          <div id="fm-map-dropdown-items"></div>
+        </div>
+      </div>
     </div>
     <div class="files-right">
       <button id="clearButton" onclick="clearPaths()">Clear Lines</button>
@@ -3097,7 +3107,83 @@ if (mapJSONData && mapJSONData.fields && mapJSONData.fields[fieldKey]) {
     
     // Override original loadMap to use our new loader.
     function loadMap() { loadMapForTextures(); }
-    
+
+    // =====================================================
+    // NAMED MAP DROPDOWN UI
+    // =====================================================
+    var namedMaps = [
+      { name: "Moon Base",              code: "74431" },
+      { name: "Asida",                  code: "75927" },
+      { name: "Milano",                 code: "77548" },
+      { name: "Audacity 2",             code: "74488" },
+      { name: "OTI Jardim",             code: "80139" },
+      { name: "Basenji",                code: "88945" },
+      { name: "Combine",                code: "78402" },
+      { name: "Centenaria",             code: "81275" },
+      { name: "Sugar Free Hill",        code: "81571" },
+      { name: "Sardonica",              code: "80147" }
+    ];
+
+    function addMapDropdown() {
+      const button = document.getElementById('fm-map-dropdown-button');
+      const menu = document.getElementById('fm-map-dropdown-menu');
+      const searchInput = document.getElementById('fm-map-dropdown-search');
+      const itemsContainer = document.getElementById('fm-map-dropdown-items');
+      if (!button || !menu || !searchInput || !itemsContainer) {
+        console.error("Map dropdown elements not found");
+        return;
+      }
+
+      itemsContainer.innerHTML = namedMaps.map(m => `
+        <div class="dropdown-item" data-value="${m.code}" style="padding: 4px 8px; cursor: pointer;">
+          ${m.name}
+        </div>
+      `).join('');
+
+      button.addEventListener('click', function(e) {
+        const opening = (menu.style.display === "none" || menu.style.display === "");
+        menu.style.display = opening ? "block" : "none";
+        if (opening) {
+          searchInput.value = "";
+          document.querySelectorAll('#fm-map-dropdown-items .dropdown-item').forEach(item => item.style.display = "block");
+          searchInput.focus();
+        }
+        e.stopPropagation();
+      });
+
+      document.addEventListener('click', function() {
+        menu.style.display = "none";
+      });
+
+      menu.addEventListener('click', function(e) {
+        e.stopPropagation();
+      });
+
+      searchInput.addEventListener('input', function() {
+        const query = this.value.toLowerCase();
+        const items = document.querySelectorAll('#fm-map-dropdown-items .dropdown-item');
+        items.forEach(item => {
+          const text = item.textContent.toLowerCase();
+          item.style.display = text.includes(query) ? "block" : "none";
+        });
+      });
+
+      const items = document.querySelectorAll('#fm-map-dropdown-items .dropdown-item');
+      items.forEach(item => {
+        item.addEventListener('click', function(e) {
+          e.preventDefault();
+          const selectedCode = this.getAttribute('data-value');
+          const selectedMap = namedMaps.find(m => m.code === selectedCode);
+          if (selectedMap) {
+            document.getElementById('mapCode').value = selectedMap.code;
+            showLoading('Loading map...');
+            loadMap();
+          }
+          menu.style.display = "none";
+        });
+      });
+    }
+
     // =====================================================
     // TEXTURE PACK DROPDOWN UI
     // =====================================================
@@ -3196,6 +3282,7 @@ window.addEventListener("DOMContentLoaded", function() {
 
 document.addEventListener("DOMContentLoaded", function() {
   addTextureDropdown();
+  addMapDropdown();
 });
 
 
